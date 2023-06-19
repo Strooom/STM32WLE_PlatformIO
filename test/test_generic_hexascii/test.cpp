@@ -52,7 +52,7 @@ void test_hexCharacterFromValue() {
 }
 
 void test_hexStringToBinaryArray() {
-    const char input[] = "0123456789ABCDEF";
+    const char input[17] = "0123456789ABCDEF";
     uint8_t output[8];
     uint8_t expectedOutput[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
     hexAscii::hexStringToBinaryArray(input, output);
@@ -61,8 +61,8 @@ void test_hexStringToBinaryArray() {
 
 void test_binaryArrayToHexString() {
     uint8_t input[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-    char output[9];        // 1 extra for terminating zero
-    const char expectedOutput[] = "0123456789ABCDEF";
+    char output[17];        // 1 extra for terminating zero
+    const char expectedOutput[17] = "0123456789ABCDEF";
     hexAscii::binaryArrayToHexString(input, 8, output);
     TEST_ASSERT_EQUAL_STRING(expectedOutput, output);
 }
