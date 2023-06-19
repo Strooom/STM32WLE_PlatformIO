@@ -1,7 +1,9 @@
 name: PlatformIO CI
-on: push:
-  branches: 
-    - 'develop'
+on: 
+  push:
+    branches: 
+      - 'main'
+      - 'develop'
 
 jobs:
   test:
