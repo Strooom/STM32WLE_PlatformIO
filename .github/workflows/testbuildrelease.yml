@@ -8,7 +8,6 @@ on:
     workflow_dispatch:
     push:
         branches: [main, develop]
- 
 
 jobs:
     test:
@@ -36,4 +35,30 @@ jobs:
 
         - name: Run all generic unit tests
           run: pio test -e generic_all_tests
-    
+
+    build:
+      needs: test
+      name: build a binary
+      runs-on: ubuntu-latest
+      steps:
+        - name: CheckOut repository
+          uses: actions/checkout@v3
+
+        - name: Enable cache
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/.cache/pip
+              ~/.platformio/.cache
+            key: ${{ runner.os }}-pio
+
+        - name: Install Python 3.9
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.9'
+
+        - name: Install PlatformIO Core
+          run: pip install --upgrade platformio
+
+        - name: Build
+          run: pio -e mumo_v2x_pcb
