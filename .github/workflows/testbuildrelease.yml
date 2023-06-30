@@ -37,8 +37,8 @@ jobs:
           run: pio test -e generic_all_tests
 
     build:
-      needs: test
       name: build a binary
+      needs: test
       runs-on: ubuntu-latest
       steps:
         - name: CheckOut repository
@@ -62,3 +62,22 @@ jobs:
 
         - name: Build
           run: pio run -e mumo_v2x_pcb
+
+    release:
+      name: release a new version
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+        pull-requests: write
+      steps:
+        - name: Google's Release Please
+          uses: google-github-actions/release-please-action@v3
+          with:
+            release-type: node
+            package-name: release-please-action
+        - name: Upload Release Artifact = firmware binary
+          if: ${{ steps.release.outputs.release_created }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: gh release upload ${{ steps.release.outputs.tag_name }} .pio/build/mumo_v2x_pcb/firmware.bin
