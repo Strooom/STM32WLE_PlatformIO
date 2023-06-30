@@ -61,4 +61,4 @@ jobs:
           run: pip install --upgrade platformio
 
         - name: Build
-          run: pio -e mumo_v2x_pcb
+          run: pio run -e mumo_v2x_pcb
