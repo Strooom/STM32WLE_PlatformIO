@@ -74,9 +74,8 @@ jobs:
         - name: Google's Release Please
           uses: google-github-actions/release-please-action@v3
           with:
-            release-type: node
             package-name: release-please-action
-        - name: Upload Release Artifact = firmware binary
+        - name: Upload Release Package
           if: ${{ steps.release.outputs.release_created }}
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
