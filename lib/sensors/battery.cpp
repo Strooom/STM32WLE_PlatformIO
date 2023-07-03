@@ -58,7 +58,7 @@ uint8_t battery::getChargeLevel() {
 }
 
 float battery::getVoltage() {
-    return 0.0F;
+    return 3.2F;
 }
 
 uint8_t battery::calculateCharge(float voltage) {
