@@ -8,7 +8,7 @@
 
 const char* toString(measurementChannel type) {
     switch (type) {
-        case measurementChannel::batteryChargeLevel:
+        case measurementChannel::batteryVoltage:
             return "batteryChargeLevel";
             break;
 
