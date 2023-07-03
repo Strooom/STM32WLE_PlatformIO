@@ -7,20 +7,18 @@
 #pragma once
 #include <stdint.h>
 
-enum class measurementChannel : uint32_t {
-    none = 0x00,
+#include "measurement.h"
+// This implements a large circular buffer to store samples.
+// Samples are always written to EEPROM, but the head and level are kept in RAM, after reset, we can recover the head and level from scanning the EEPROM
 
-    batteryChargeLevel                   = 0x01,
-    BME680SensorTemperature        = 0x10,
-    BME680SensorRelativeHumidity   = 0x11,
-    BME680SensorBarometricPressure = 0x12,
-    TSL25911VisibleLight           = 0x20,
-    TSL25911Infrared               = 0x21,
-    status                         = 0xE0,
-    events                         = 0xF0
+
+class measurementCollection {
+  public:
+    void add(measurement newSample);
+    void get();
+
+    uint32_t getNmbrToBeTransmitted(); // how many measurements are still to be transmitted
+  private:
+    uint32_t head{0};
+    uint32_t level{0};
 };
-
-const char* toString(measurementChannel aChannel);
-
-
-// °C
