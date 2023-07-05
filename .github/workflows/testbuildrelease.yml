@@ -5,7 +5,6 @@ on:
         branches: [main, develop]
 
 jobs:
-    
     versioning:
       name: determine current and possible next versions
       # needs: unittest
@@ -58,20 +57,14 @@ jobs:
             echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
             echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
 
-        - name: workflow test - step 1
-          id: workflowtest1
-          run: |
-            echo "checking github output variables : "
-            echo "Commit hash : ${{ steps.versioninfo.outputs.commithash }}"
-            echo "Current version : ${{ steps.versioninfo.outputs.currentversion }}"
-            echo "Next major version : ${{ steps.versioninfo.outputs.nextmajorversion }}"
-            echo "Next minor version : ${{ steps.versioninfo.outputs.nextminorversion }}"
-            echo "Next patch version : ${{ steps.versioninfo.outputs.nextpatchversion }}"
-            echo "Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
-
         - name: Determine which version to build
           id: selectversion
           run: |
+            echo "Possible versions :"
+            echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
+            echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
+            echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+            echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
             if [ "${{ github.ref }}" == "refs/heads/main" ]; then
               echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
               if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
@@ -86,8 +79,8 @@ jobs:
               echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
 
-        - name: workflow test - step 2
-          id: workflowtest2
+        - name: workflow test
+          id: workflowtest
           run: |
               echo "checking github output variables : "
               echo "Next version : ${{ steps.versioninfo.outputs.nextversion }}"
