@@ -21,6 +21,6 @@ jobs:
           id: getalltags
           run: |
             declare -i currentmajorversion=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
-            echo "currentmajorversion=$currentmajorversion"
             declare -i nextmajorversion=$currentmajorversion+1
-            echo "nextmajorversion=$nextmajorversion"
+            echo "currentmajorversion=$currentmajorversion, nextmajorversion=$nextmajorversion"
+
