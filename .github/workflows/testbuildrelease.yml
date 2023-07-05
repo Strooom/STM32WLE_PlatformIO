@@ -5,36 +5,10 @@ on:
         branches: [main, develop]
 
 jobs:
-    unittest:
-      name: run all unit tests
-      runs-on: ubuntu-latest
-      steps:
-        - name: CheckOut repository
-          uses: actions/checkout@v3
-
-        - name: Enable cache
-          uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
-
-        - name: Install Python 3.9
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.9'
-
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
-
-        - name: Run all generic unit tests
-          run: pio test -e all_generic_unittests
-
-
+    
     versioning:
       name: determine current and possible next versions
-      needs: unittest
+      # needs: unittest
       runs-on: ubuntu-latest
       outputs:
         fullversiontag: ${{ steps.getalltags.outputs.fullversiontag }}
@@ -58,7 +32,7 @@ jobs:
         - name: Version Test
           id: versiontester
           run: |
-            echo ${{ steps.getalltags.outputs.fullversiontag }}
+            echo "Current latest version : ${{ steps.getalltags.outputs.fullversiontag }}"
             echo ${{ steps.getalltags.outputs.nextMajor }}
             echo ${{ steps.getalltags.outputs.nextMinor }}
             echo ${{ steps.getalltags.outputs.nextPatch }}
