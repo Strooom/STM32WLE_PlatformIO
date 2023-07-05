@@ -1,9 +1,3 @@
-# https://github.com/marketplace/actions/release-please-action
-# https://www.conventionalcommits.org/en/v1.0.0/
-# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
-# https://docs.github.com/en/actions
-# https://naereen.github.io/badges/
-
 name: Test, Build and Release
 on:
     workflow_dispatch:
@@ -11,74 +5,88 @@ on:
         branches: [main, develop]
 
 jobs:
-    test:
-      name: run all unit tests
+    versioning:
+      name: determine current and possible next versions
+      # needs: unittest
       runs-on: ubuntu-latest
+      outputs:
+        branchname: ${{ steps.versioninfo.outputs.branchname }}
+        commithash: ${{ steps.versioninfo.outputs.commithash }}
+        currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
+        currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
+        currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
+        nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
+        nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
+        nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
+        currentversion: ${{ steps.versioninfo.outputs.currentversion }}
+        nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
+        nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
+        nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
+        nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
+        nextversion: ${{ steps.selectversion.outputs.nextversion }}
+
       steps:
-        - name: CheckOut repository
-          uses: actions/checkout@v3
-
-        - name: Enable cache
-          uses: actions/cache@v3
+        - uses: actions/checkout@v3
           with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
+            fetch-depth: 0
+        - name: Get version data
+          id: versioninfo
+          run: |
+            echo "extract branch name from GITHUB_REF"
+            declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
+            echo "extract commit short hash"
+            declare commithash=$(git log --pretty=format:'%h' -n 1)
+            echo "extract SemVer numbers from repository tags"
+            declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
+            declare -i nextmajornmbr=$currentmajornmbr+1
+            echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
+            declare -i currentminornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f2)
+            declare -i nextminornmbr=$currentminornmbr+1
+            echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
+            declare -i currentpatchnmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f3)
+            declare -i nextpatchnmbr=$currentpatchnmbr+1
+            echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
+            echo "assemble complete version strings, for current and possible next versions"
+            declare currentversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
+            declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
+            declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
+            echo "output to GitHub Actions output variables"
+            echo "commithash=$commithash" >> $GITHUB_OUTPUT
+            echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
+            echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
+            echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
+            echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
+            echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
 
-        - name: Install Python 3.9
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.9'
+        - name: Determine which version to build
+          id: selectversion
+          run: |
+            echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
+            echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
+            echo "Current version       : ${{ steps.versioninfo.outputs.currentversion }}"
+            echo "Possible versions :"
+            echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
+            echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
+            echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+            echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
+            if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
+              echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
+              if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
+                echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
+              elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
+                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
+              else
+                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
+            fi
 
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
-
-        - name: Run all generic unit tests
-          run: pio test -e generic_all_tests
-
-    build:
-      name: build a binary
-      needs: test
-      runs-on: ubuntu-latest
-      steps:
-        - name: CheckOut repository
-          uses: actions/checkout@v3
-
-        - name: Enable cache
-          uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
-
-        - name: Install Python 3.9
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.9'
-
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
-
-        - name: Build
-          run: pio run -e mumo_v2x_pcb
-
-    release:
-      name: release a new version
-      needs: build
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-        pull-requests: write
-      steps:
-        - name: Google's Release Please
-          uses: google-github-actions/release-please-action@v3
-          with:
-            package-name: release-please-action
-            release-type: simple
-        - name: Upload Release Package
-          if: ${{ steps.release.outputs.release_created }}
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: gh release upload ${{ steps.release.outputs.tag_name }} .pio/build/mumo_v2x_pcb/firmware.bin
+        - name: workflow test
+          id: workflowtest
+          run: |
+              echo "checking github output variables : "
+              echo "Next version : ${{ steps.selectversion.outputs.nextversion }}"
+  
