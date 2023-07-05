@@ -39,15 +39,15 @@ jobs:
             declare commithash=$(git rev-parse --short HEAD)
             declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
             echo "fulltag = $fulltag"
-            declare versiontag=$($fulltag | cut -d'-' -f1)
+            declare versiontag=$(echo $fulltag | cut -d'-' -f1)
             echo "extract SemVer numbers from version tag $versiontag"
-            declare -i currentmajornmbr=$($versiontag | cut -c 2- | cut -d'.' -f1)
+            declare -i currentmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
             declare -i nextmajornmbr=$currentmajornmbr+1
             echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
-            declare -i currentminornmbr=$($versiontag | cut -c 2- | cut -d'.' -f2)
+            declare -i currentminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
             declare -i nextminornmbr=$currentminornmbr+1
             echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
-            declare -i currentpatchnmbr=$($versiontag | cut -c 2- | cut -d'.' -f3)
+            declare -i currentpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
             declare -i nextpatchnmbr=$currentpatchnmbr+1
             echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
             echo "assemble complete version strings, for current and possible next versions"
