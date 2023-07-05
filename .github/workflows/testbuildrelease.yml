@@ -11,11 +11,8 @@ jobs:
       # needs: unittest
       runs-on: ubuntu-latest
       outputs:
-        fullversiontag: ${{ steps.getalltags.outputs.fullversiontag }}
-        nextMajor: ${{ steps.getalltags.outputs.nextMajor }}
-        nextMinor: ${{ steps.getalltags.outputs.nextMinor }}
-        nextPatch: ${{ steps.getalltags.outputs.nextPatch }}
-        nextversiontag: ${{ steps.selectversion.outputs.nextversiontag }}
+        currentmajorversion: ${{ steps.getalltags.outputs.currentmajorversion }}
+
       steps:
         - uses: actions/checkout@v3
           with:
@@ -23,40 +20,7 @@ jobs:
         - name: Get version data
           id: getalltags
           run: |
-            # create all possible next versions
-            echo "fullversiontag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))" >> $GITHUB_OUTPUT
-            echo "nextMajor=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -d'_' -f1-3 | awk -F'_' '{print $1+1"_"$2-$2"_"$3-$3}')" >> $GITHUB_OUTPUT
-            echo "nextMinor=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -d'_' -f1-3 | awk -F'_' '{print $1"_"$2+1"_"$3-$3}')" >> $GITHUB_OUTPUT
-            echo "nextPatch=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -d'_' -f1-3 | awk -F'_' '{print $1"_"$2"_"$3+1}')" >> $GITHUB_OUTPUT
-  
-        - name: Version Test
-          id: versiontester
-          run: |
-            echo "Current latest version : ${{ steps.getalltags.outputs.fullversiontag }}"
-            echo ${{ steps.getalltags.outputs.nextMajor }}
-            echo ${{ steps.getalltags.outputs.nextMinor }}
-            echo ${{ steps.getalltags.outputs.nextPatch }}
-  
-        - name: when running on main branch check commit title
-          id: selectversion
-          run: |
-            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-              echo "Running on main branch"
-              echo "Checking commit title"
-              echo "Commit title: ${{ github.event.head_commit.message }}"
-              if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
-                echo "major version bump"
-                echo "nextversiontag=${{ steps.getalltags.outputs.nextMajor }}" >> $GITHUB_OUTPUT
-              elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-                echo "minor version bump"
-                echo "nextversiontag=${{ steps.getalltags.outputs.nextMinor }}" >> $GITHUB_OUTPUT
-              else
-                echo "No version bump specified"
-                echo "nextversiontag=${{ steps.getalltags.outputs.nextPatch }}" >> $GITHUB_OUTPUT
-              fi
-            else
-              echo "Not running on main branch"
-              echo "nextversiontag=${{ steps.getalltags.outputs.fullversiontag }}" >> $GITHUB_OUTPUT
-            fi
-
-  
+            declare -i currentmajorversion=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
+            echo "currentmajorversion=$currentmajorversion"
+            declare -i nextmajorversion=$currentmajorversion+1
+            echo "nextmajorversion=$nextmajorversion"
