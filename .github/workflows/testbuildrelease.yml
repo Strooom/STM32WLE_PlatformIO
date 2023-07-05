@@ -11,22 +11,27 @@ jobs:
       # needs: unittest
       runs-on: ubuntu-latest
       outputs:
-        currentmajorversion: ${{ steps.getalltags.outputs.currentmajorversion }}
+        currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
+        currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
+        currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
+        nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
+        nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
+        nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
 
       steps:
         - uses: actions/checkout@v3
           with:
             fetch-depth: 0
         - name: Get version data
-          id: getalltags
+          id: versioninfo
           run: |
-            declare -i currentmajorversion=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
-            declare -i nextmajorversion=$currentmajorversion+1
-            echo "currentmajorversion=$currentmajorversion, nextmajorversion=$nextmajorversion"
-            declare -i currentminorversion=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f2)
-            declare -i nextminorversion=$currentminorversion+1
-            echo "currentminorversion=$currentminorversion, nextminorversion=$nextminorversion"
-            declare -i currentpatchversion=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f3)
-            declare -i nextpatchversion=$currentpatchversion+1
-            echo "currentpatchversion=$currentpatchversion, nextpatchversion=$nextpatchversion"
+            declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
+            declare -i nextmajornmbr=$currentmajornmbr+1
+            echo "currentmajornmbr=$currentmajornmbr, nextmajornmbr=$nextmajornmbr"
+            declare -i currentminornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f2)
+            declare -i nextminornmbr=$currentminornmbr+1
+            echo "currentminornmbr=$currentminornmbr, nextminornmbr=$nextminornmbr"
+            declare -i currentpatchnmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f3)
+            declare -i nextpatchnmbr=$currentpatchnmbr+1
+            echo "currentpatchnmbr=$currentpatchnmbr, nextpatchnmbr=$nextpatchnmbr"
 
