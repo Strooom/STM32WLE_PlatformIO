@@ -17,6 +17,10 @@ jobs:
         nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
         nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
         nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
+        currentversion: ${{ steps.versioninfo.outputs.currentversion }}
+        nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
+        nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
+        nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
 
       steps:
         - uses: actions/checkout@v3
@@ -34,4 +38,9 @@ jobs:
             declare -i currentpatchnmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f3)
             declare -i nextpatchnmbr=$currentpatchnmbr+1
             echo "currentpatchnmbr=$currentpatchnmbr, nextpatchnmbr=$nextpatchnmbr"
+            echo "currentversion = v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            echo "nextmajorversion = v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            echo "nextminorversion = v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
+            echo "nextpatchversion = v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
+            
 
