@@ -32,18 +32,22 @@ jobs:
         - name: Get version data
           id: versioninfo
           run: |
-            echo "extract branch name from GITHUB_REF"
+            echo "extract branch name from github_ref '${{ github.ref }}'"
             declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
-            echo "extract commit short hash"
-            declare commithash=$(git log --pretty=format:'%h' -n 1)
-            echo "extract SemVer numbers from repository tags"
-            declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
+            echo "clean branch name = $branchname"
+            echo "extract commit short hash : $(git rev-parse --short HEAD)"
+            declare commithash=$(git rev-parse --short HEAD)
+            declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
+            echo "fulltag = $fulltag"
+            declare versiontag=$(echo $fulltag | cut -d'-' -f1)
+            echo "extract SemVer numbers from version tag $versiontag"
+            declare -i currentmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
             declare -i nextmajornmbr=$currentmajornmbr+1
             echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
-            declare -i currentminornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f2)
+            declare -i currentminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
             declare -i nextminornmbr=$currentminornmbr+1
             echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
-            declare -i currentpatchnmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f3)
+            declare -i currentpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
             declare -i nextpatchnmbr=$currentpatchnmbr+1
             echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
             echo "assemble complete version strings, for current and possible next versions"
@@ -53,6 +57,7 @@ jobs:
             declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
             declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
             echo "output to GitHub Actions output variables"
+            echo "branchname=$branchname" >> $GITHUB_OUTPUT
             echo "commithash=$commithash" >> $GITHUB_OUTPUT
             echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
             echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
