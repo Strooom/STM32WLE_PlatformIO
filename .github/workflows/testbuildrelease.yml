@@ -10,6 +10,7 @@ jobs:
       # needs: unittest
       runs-on: ubuntu-latest
       outputs:
+        branchname: ${{ steps.versioninfo.outputs.branchname }}
         commithash: ${{ steps.versioninfo.outputs.commithash }}
         currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
         currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
@@ -31,6 +32,8 @@ jobs:
         - name: Get version data
           id: versioninfo
           run: |
+            echo "extract branch name from GITHUB_REF"
+            declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
             echo "extract commit short hash"
             declare commithash=$(git log --pretty=format:'%h' -n 1)
             echo "extract SemVer numbers from repository tags"
@@ -60,12 +63,15 @@ jobs:
         - name: Determine which version to build
           id: selectversion
           run: |
+            echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
+            echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
+            echo "Current version       : ${{ steps.versioninfo.outputs.currentversion }}"
             echo "Possible versions :"
             echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
             echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
             echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
             echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
-            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
               echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
               if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
                 echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
@@ -75,8 +81,6 @@ jobs:
                 echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
               fi
             else
-              echo "Triggered from 'other' branch : ${{ github.ref }}"
-              echo  "Triggered from 'other' branch : $(${{ github.ref }} | cut -d'/' -f3))"
               echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
 
