@@ -77,13 +77,13 @@ jobs:
               if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
                 echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
               elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-                echo "nextversion=${{ steps.getalltags.outputs.nextMinor }}" >> $GITHUB_OUTPUT
+                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
               else
                 echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
               fi
             else
               echo "Triggered from other branch : ${{ github.ref }}"
-              echo "nextversion=${{ steps.getalltags.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
+              echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
 
         - name: workflow test - step 2
