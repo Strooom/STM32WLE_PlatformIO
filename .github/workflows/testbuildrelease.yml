@@ -39,7 +39,7 @@ jobs:
 
             declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
 
-            declare commithash=$(git rev-parse --short HEAD | cut -d'-' -f3)
+            declare commithash=$(git rev-parse --short HEAD)
 
             echo "extract SemVer numbers from repository tag '$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))'"
             declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
