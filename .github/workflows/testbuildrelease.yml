@@ -49,9 +49,13 @@ jobs:
             echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
             echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
             echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
+
+        - name: Version Test
+          id: versiontester
+          run: |
             echo "checking github output variables : "
-            echo "Current latest version : ${{ steps.versioninfo.outputs.currentversion }}"
+            echo "Current version : ${{ steps.versioninfo.outputs.currentversion }}"
             echo "Next major version : ${{ steps.versioninfo.outputs.nextmajorversion }}"
             echo "Next minor version : ${{ steps.versioninfo.outputs.nextminorversion }}"
             echo "Next patch version : ${{ steps.versioninfo.outputs.nextpatchversion }}"
-            
+
