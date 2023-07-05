@@ -75,7 +75,8 @@ jobs:
                 echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
               fi
             else
-              echo "Triggered from other branch : ${{ github.ref }}"
+              echo "Triggered from 'other' branch : ${{ github.ref }}"
+              echo  "Triggered from 'other' branch : $(${{ github.ref }} | cut -d'/' -f3))"
               echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
 
