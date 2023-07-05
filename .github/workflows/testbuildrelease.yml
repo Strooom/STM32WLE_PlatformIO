@@ -36,7 +36,11 @@ jobs:
             declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
             echo "clean branch name = $branchname"
             echo "extract commit short hash"
+
+            declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
+
             declare commithash=$(git log --pretty=format:'%h' -n 1)
+
             echo "extract SemVer numbers from repository tag '$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))'"
             declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
             declare -i nextmajornmbr=$currentmajornmbr+1
