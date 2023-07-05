@@ -40,10 +40,10 @@ jobs:
             declare -i nextpatchnmbr=$currentpatchnmbr+1
             echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
             echo "assemble complete version strings, for current and possible next versions"
-            currentversion = "v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
-            nextmajorversion = "v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
-            nextminorversion = "v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
-            nextpatchversion = "v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
+            declare currentversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
+            declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
+            declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
             echo "output to GitHub Actions output variables"
             echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
             echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
