@@ -50,8 +50,8 @@ jobs:
             echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
             echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
             echo "checking github output variables : "
-            echo ${{ steps.versioninfo.outputs.currentversion }}
-            echo ${{ steps.versioninfo.outputs.nextmajorversion }}
-            echo ${{ steps.versioninfo.outputs.nextminorversion }}
-            echo ${{ steps.versioninfo.outputs.nextpatchversion }}
-
+            echo "Current latest version : ${{ steps.versioninfo.outputs.currentversion }}"
+            echo "Next major version : ${{ steps.versioninfo.outputs.nextmajorversion }}"
+            echo "Next minor version : ${{ steps.versioninfo.outputs.nextminorversion }}"
+            echo "Next patch version : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+            
