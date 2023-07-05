@@ -27,6 +27,11 @@ jobs:
         nextversion: ${{ steps.selectversion.outputs.nextversion }}
 
       steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 0
+
         - name: Get version data
           id: versioninfo
           run: |
@@ -86,11 +91,6 @@ jobs:
             else
               echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
-
-        - name: Checkout Repository
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
 
         - name: Enable caching
           uses: actions/cache@v3
