@@ -25,6 +25,7 @@ jobs:
         nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
         nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
         nextversion: ${{ steps.selectversion.outputs.nextversion }}
+        nextversionfilename: ${{ steps.selectversion.outputs.nextversionfilename }}
 
       steps:
         - name: Checkout Repository
@@ -90,14 +91,26 @@ jobs:
             if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
               echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
               if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
-                echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
+                declare nextversion="${{ steps.versioninfo.outputs.nextmajorversion }}"
+                declare nextversionfilename=$(echo "${nextversion//./_}")
+                echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+                echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
               elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
+                declare nextversion="${{ steps.versioninfo.outputs.nextminorversion }}"
+                declare nextversionfilename=$(echo "${nextversion//./_}")
+                echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+                echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
               else
-                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
+                declare nextversion="${{ steps.versioninfo.outputs.nextpatchversion }}"
+                declare nextversionfilename=$(echo "${nextversion//./_}")
+                echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+                echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
               fi
             else
-              echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
+              declare nextversion="${{ steps.versioninfo.outputs.nextdevelopversion }}"
+              declare nextversionfilename=$(echo "${nextversion//./_}")
+              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
             fi
 
         - name: Setup Python
