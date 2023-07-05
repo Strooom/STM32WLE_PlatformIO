@@ -11,6 +11,7 @@ jobs:
       # needs: unittest
       runs-on: ubuntu-latest
       outputs:
+        commithash: ${{ steps.versioninfo.outputs.commithash }}
         currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
         currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
         currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
@@ -21,6 +22,8 @@ jobs:
         nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
         nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
         nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
+        nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
+        nextversion: ${{ steps.versioninfo.outputs.nextversion }}
 
       steps:
         - uses: actions/checkout@v3
@@ -29,6 +32,8 @@ jobs:
         - name: Get version data
           id: versioninfo
           run: |
+            echo "extract commit short hash"
+            declare commithash=$(git log --pretty=format:'%h' -n 1)
             echo "extract SemVer numbers from repository tags"
             declare -i currentmajornmbr=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main) | cut -c 2- | cut -d'.' -f1)
             declare -i nextmajornmbr=$currentmajornmbr+1
@@ -44,18 +49,39 @@ jobs:
             declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
             declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
             declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
+            declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr-$commithash"
             echo "output to GitHub Actions output variables"
+            echo "commithash=$commithash" >> $GITHUB_OUTPUT
             echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
             echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
             echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
             echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
+            echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
 
         - name: Version Test
           id: versiontester
           run: |
             echo "checking github output variables : "
+            echo "Commit hash : ${{ steps.versioninfo.outputs.commithash }}"
             echo "Current version : ${{ steps.versioninfo.outputs.currentversion }}"
             echo "Next major version : ${{ steps.versioninfo.outputs.nextmajorversion }}"
             echo "Next minor version : ${{ steps.versioninfo.outputs.nextminorversion }}"
             echo "Next patch version : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+            echo "Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
 
+        - name: Determine which version to build
+          id: selectversion
+          run: |
+            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+              echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
+              if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
+                echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
+              elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
+                echo "nextversion=${{ steps.getalltags.outputs.nextMinor }}" >> $GITHUB_OUTPUT
+              else
+                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "Triggered from other branch : ${{ github.ref }}"
+              echo "nextversion=${{ steps.getalltags.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
+            fi
