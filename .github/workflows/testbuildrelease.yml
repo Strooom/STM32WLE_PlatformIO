@@ -23,7 +23,7 @@ jobs:
         nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
         nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
         nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
-        nextversion: ${{ steps.versioninfo.outputs.nextversion }}
+        nextversion: ${{ steps.selectversion.outputs.nextversion }}
 
       steps:
         - uses: actions/checkout@v3
@@ -88,5 +88,5 @@ jobs:
           id: workflowtest
           run: |
               echo "checking github output variables : "
-              echo "Next version : ${{ steps.versioninfo.outputs.nextversion }}"
+              echo "Next version : ${{ steps.selectversion.outputs.nextversion }}"
   
