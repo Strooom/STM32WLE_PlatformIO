@@ -49,7 +49,7 @@ jobs:
             declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
             declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
             declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
-            declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr-$commithash"
+            declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
             echo "output to GitHub Actions output variables"
             echo "commithash=$commithash" >> $GITHUB_OUTPUT
             echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
@@ -58,8 +58,8 @@ jobs:
             echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
             echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
 
-        - name: Version Test
-          id: versiontester
+        - name: workflow test - step 1
+          id: workflowtest1
           run: |
             echo "checking github output variables : "
             echo "Commit hash : ${{ steps.versioninfo.outputs.commithash }}"
@@ -85,3 +85,10 @@ jobs:
               echo "Triggered from other branch : ${{ github.ref }}"
               echo "nextversion=${{ steps.getalltags.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
             fi
+
+        - name: workflow test - step 2
+          id: workflowtest2
+          run: |
+              echo "checking github output variables : "
+              echo "Next version : ${{ steps.versioninfo.outputs.nextversion }}"
+  
