@@ -117,7 +117,7 @@ jobs:
           id: versiontester
           run: |
               echo "checking github output variables : "
-              echo "Next version : ${{ needs.selectversion.outputs.nextversion }}"
+              echo "Next version : ${{ needs.versioning.outputs.nextversion }}"
   
         - name: Create Release
           id: create_release
@@ -126,8 +126,8 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            tag_name: ${{ needs.selectversion.outputs.nextversion }}
-            release_name: Release ${{ needs.selectversion.outputs.nextversion }}
+            tag_name: ${{ needs.versioning.outputs.nextversion }}
+            release_name: Release ${{ needs.versioning.outputs.nextversion }}
             draft: false
             prerelease: false
   
@@ -136,12 +136,12 @@ jobs:
   
         - name: Build Release
           run: pio run -e production
-          #export PLATFORMIO_BUILD_FLAGS="'-DNEXT_VERSION=\"${{ needs.versioncheck.outputs.nextversiontag }}-MCU4M-PROD\"'"
+          #export PLATFORMIO_BUILD_FLAGS="'-DNEXT_VERSION=\"${{ needs.versioning.outputs.nextversion }}-MCU4M-PROD\"'"
   
         - name: Archive Production results
           uses: actions/upload-artifact@v3
           with:
-            name: ${{ needs.selectversion.outputs.nextversion }}.bin
+            name: ${{ needs.versioning.outputs.nextversion }}.bin
             path: .pio/build/production/firmware.bin
             if-no-files-found: error
   
