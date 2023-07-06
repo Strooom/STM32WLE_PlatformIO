@@ -135,6 +135,10 @@ jobs:
             #define BUILD_VERSION   "${{ steps.selectversion.outputs.buildversion }}"
             #define BUILD_TIMESTAMP "${{ steps.versioninfo.outputs.buildtimestamp }}"
 
+      - name: Verify Saved Build info
+        run: |
+          cat include/buildinfo.h    
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
