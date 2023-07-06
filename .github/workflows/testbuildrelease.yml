@@ -146,7 +146,7 @@ jobs:
       - name: Release when on main branch
         id: createrelease
         uses: actions/create-release@v1
-        if: ${{ steps.versioninfo.outputs.branchname }} == 'main'
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -158,7 +158,7 @@ jobs:
       - name: Attach Binary to Release
         id: attachbinarytorelease
         uses: actions/upload-release-asset@v1
-        if: ${{ steps.versioninfo.outputs.branchname }} == 'main'
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
