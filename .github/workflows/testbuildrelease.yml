@@ -133,7 +133,9 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build
-        run: pio run -e production
+        run: |
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.nextdevelopversion }}\"'"
+          pio run -e production
 
       - name: Attach Binary to Workflow run
         id: attachbinarytoworkflowrun

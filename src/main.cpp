@@ -10,8 +10,6 @@ void setup()
 
 void loop()
 {
-  Serial.println("Hello World");
-  //mySerial.println("Hello World");
-  // delay(1000);
+  Serial.println(BUILD_VERSION);
   HAL_Delay(1000);
 }
