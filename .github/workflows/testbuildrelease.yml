@@ -150,8 +150,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ needs.versioning.outputs.nextversion }}
-          release_name: Release ${{ needs.versioning.outputs.nextversion }}
+          tag_name: ${{ steps.selectversion.outputs.nextversion }}
+          release_name: Release ${{ steps.selectversion.outputs.nextversion }}
           draft: false
           prerelease: false
 
