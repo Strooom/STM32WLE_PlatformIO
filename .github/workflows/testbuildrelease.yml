@@ -14,13 +14,13 @@ jobs:
       branchname: ${{ steps.versioninfo.outputs.branchname }}
       commithash: ${{ steps.versioninfo.outputs.commithash }}
       buildtimestamp: ${{ steps.versioninfo.outputs.buildtimestamp }}
-      currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
-      currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
-      currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
+      lastmajornmbr: ${{ steps.versioninfo.outputs.lastmajornmbr }}
+      lastminornmbr: ${{ steps.versioninfo.outputs.lastminornmbr }}
+      lastpatchnmbr: ${{ steps.versioninfo.outputs.lastpatchnmbr }}
       nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
       nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
       nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
-      currentversion: ${{ steps.versioninfo.outputs.currentversion }}
+      lastversion: ${{ steps.versioninfo.outputs.lastversion }}
       nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
       nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
       nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
@@ -57,26 +57,26 @@ jobs:
           echo "fulltag = $fulltag"
           declare versiontag=$(echo $fulltag | cut -d'-' -f1)
           echo "extract SemVer numbers from version tag $versiontag"
-          declare -i currentmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
-          declare -i nextmajornmbr=$currentmajornmbr+1
-          echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
-          declare -i currentminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
-          declare -i nextminornmbr=$currentminornmbr+1
-          echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
-          declare -i currentpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
-          declare -i nextpatchnmbr=$currentpatchnmbr+1
-          echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
-          echo "assemble complete version strings, for current and possible next versions"
-          declare currentversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
-          declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
-          declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
-          declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
-          declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
+          declare -i lastmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
+          declare -i nextmajornmbr=$lastmajornmbr+1
+          echo "lastmajornmbr = $lastmajornmbr, nextmajornmbr = $nextmajornmbr"
+          declare -i lastminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
+          declare -i nextminornmbr=$lastminornmbr+1
+          echo "lastminornmbr = $lastminornmbr, nextminornmbr = $nextminornmbr"
+          declare -i lastpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
+          declare -i nextpatchnmbr=$lastpatchnmbr+1
+          echo "lastpatchnmbr = $lastpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
+          echo "assemble complete version strings, for last and possible next versions"
+          declare lastversion="v$lastmajornmbr.$lastminornmbr.$lastpatchnmbr"
+          declare nextmajorversion="v$nextmajornmbr.$lastminornmbr.$lastpatchnmbr"
+          declare nextminorversion="v$lastmajornmbr.$nextminornmbr.$lastpatchnmbr"
+          declare nextpatchversion="v$lastmajornmbr.$lastminornmbr.$nextpatchnmbr"
+          declare nextdevelopversion="v$lastmajornmbr.$lastminornmbr.$lastpatchnmbr-$commithash"
           echo "output to GitHub Actions output variables"
           echo "branchname=$branchname" >> $GITHUB_OUTPUT
           echo "commithash=$commithash" >> $GITHUB_OUTPUT
           echo "buildtimestamp=$buildtimestamp" >> $GITHUB_OUTPUT
-          echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
+          echo "lastversion=$lastversion" >> $GITHUB_OUTPUT
           echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
           echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
           echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
@@ -87,8 +87,8 @@ jobs:
         run: |
           echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
           echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
-          echo "Current version       : ${{ steps.versioninfo.outputs.currentversion }}"
-          echo "Possible versions :"
+          echo "Last version          : ${{ steps.versioninfo.outputs.lastversion }}"
+          echo "Possible Next versions :"
           echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
           echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
           echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
