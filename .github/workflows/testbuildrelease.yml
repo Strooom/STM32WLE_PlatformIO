@@ -1,149 +1,168 @@
 name: Test, Build and Release
 on:
-    workflow_dispatch:
-    push:
-        branches: [main, develop]
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
 
 jobs:
-    versioning:
-      name: determine current and possible next versions
-      # needs: unittest
-      runs-on: ubuntu-latest
-      outputs:
-        branchname: ${{ steps.versioninfo.outputs.branchname }}
-        commithash: ${{ steps.versioninfo.outputs.commithash }}
-        currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
-        currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
-        currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
-        nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
-        nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
-        nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
-        currentversion: ${{ steps.versioninfo.outputs.currentversion }}
-        nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
-        nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
-        nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
-        nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
-        nextversion: ${{ steps.selectversion.outputs.nextversion }}
+  versioning:
+    name: Determine version, Test, Build and Release
+    permissions: write-all
 
-      steps:
-        - uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-        - name: Get version data
-          id: versioninfo
-          run: |
-            echo "extract branch name from github_ref '${{ github.ref }}'"
-            declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
-            echo "clean branch name = $branchname"
-            echo "extract commit short hash : $(git rev-parse --short HEAD)"
-            declare commithash=$(git rev-parse --short HEAD)
-            declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
-            echo "fulltag = $fulltag"
-            declare versiontag=$(echo $fulltag | cut -d'-' -f1)
-            echo "extract SemVer numbers from version tag $versiontag"
-            declare -i currentmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
-            declare -i nextmajornmbr=$currentmajornmbr+1
-            echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
-            declare -i currentminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
-            declare -i nextminornmbr=$currentminornmbr+1
-            echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
-            declare -i currentpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
-            declare -i nextpatchnmbr=$currentpatchnmbr+1
-            echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
-            echo "assemble complete version strings, for current and possible next versions"
-            declare currentversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
-            declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
-            declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
-            declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
-            declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
-            echo "output to GitHub Actions output variables"
-            echo "branchname=$branchname" >> $GITHUB_OUTPUT
-            echo "commithash=$commithash" >> $GITHUB_OUTPUT
-            echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
-            echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
-            echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
-            echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
-            echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
+    runs-on: ubuntu-latest
+    outputs:
+      branchname: ${{ steps.versioninfo.outputs.branchname }}
+      commithash: ${{ steps.versioninfo.outputs.commithash }}
+      currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
+      currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
+      currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
+      nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
+      nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
+      nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
+      currentversion: ${{ steps.versioninfo.outputs.currentversion }}
+      nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
+      nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
+      nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
+      nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
+      nextversion: ${{ steps.selectversion.outputs.nextversion }}
+      nextversionfilename: ${{ steps.selectversion.outputs.nextversionfilename }}
 
-        - name: Determine which version to build
-          id: selectversion
-          run: |
-            echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
-            echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
-            echo "Current version       : ${{ steps.versioninfo.outputs.currentversion }}"
-            echo "Possible versions :"
-            echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
-            echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
-            echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
-            echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
-            if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
-              echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
-              if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
-                echo "nextversion=${{ steps.versioninfo.outputs.nextmajorversion }}" >> $GITHUB_OUTPUT
-              elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
-              else
-                echo "nextversion=${{ steps.versioninfo.outputs.nextpatchversion }}" >> $GITHUB_OUTPUT
-              fi
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Enable caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+              
+      - name: Get version data
+        id: versioninfo
+        run: |
+          echo "extract branch name from github_ref '${{ github.ref }}'"
+          declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
+          echo "clean branch name = $branchname"
+          echo "extract commit short hash : $(git rev-parse --short HEAD)"
+          declare commithash=$(git rev-parse --short HEAD)
+          declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
+          echo "fulltag = $fulltag"
+          declare versiontag=$(echo $fulltag | cut -d'-' -f1)
+          echo "extract SemVer numbers from version tag $versiontag"
+          declare -i currentmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
+          declare -i nextmajornmbr=$currentmajornmbr+1
+          echo "currentmajornmbr = $currentmajornmbr, nextmajornmbr = $nextmajornmbr"
+          declare -i currentminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
+          declare -i nextminornmbr=$currentminornmbr+1
+          echo "currentminornmbr = $currentminornmbr, nextminornmbr = $nextminornmbr"
+          declare -i currentpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
+          declare -i nextpatchnmbr=$currentpatchnmbr+1
+          echo "currentpatchnmbr = $currentpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
+          echo "assemble complete version strings, for current and possible next versions"
+          declare currentversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr"
+          declare nextmajorversion="v$nextmajornmbr.$currentminornmbr.$currentpatchnmbr"
+          declare nextminorversion="v$currentmajornmbr.$nextminornmbr.$currentpatchnmbr"
+          declare nextpatchversion="v$currentmajornmbr.$currentminornmbr.$nextpatchnmbr"
+          declare nextdevelopversion="v$currentmajornmbr.$currentminornmbr.$currentpatchnmbr-$commithash"
+          echo "output to GitHub Actions output variables"
+          echo "branchname=$branchname" >> $GITHUB_OUTPUT
+          echo "commithash=$commithash" >> $GITHUB_OUTPUT
+          echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
+          echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
+          echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
+          echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
+          echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
+
+      - name: Determine which version to build
+        id: selectversion
+        run: |
+          echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
+          echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
+          echo "Current version       : ${{ steps.versioninfo.outputs.currentversion }}"
+          echo "Possible versions :"
+          echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
+          echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
+          echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+          echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
+          if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
+            echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
+            if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
+              declare nextversion="${{ steps.versioninfo.outputs.nextmajorversion }}"
+              declare nextversionfilename=$(echo "${nextversion//./_}")
+              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+            elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
+              declare nextversion="${{ steps.versioninfo.outputs.nextminorversion }}"
+              declare nextversionfilename=$(echo "${nextversion//./_}")
+              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
             else
-              echo "nextversion=${{ steps.versioninfo.outputs.nextdevelopversion }}" >> $GITHUB_OUTPUT
+              declare nextversion="${{ steps.versioninfo.outputs.nextpatchversion }}"
+              declare nextversionfilename=$(echo "${nextversion//./_}")
+              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
             fi
+          else
+            declare nextversion="${{ steps.versioninfo.outputs.nextdevelopversion }}"
+            declare nextversionfilename=$(echo "${nextversion//./_}")
+            echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
+            echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+          fi
 
-        - name: workflow test
-          id: workflowtest
-          run: |
-              echo "checking github output variables : "
-              echo "Next version : ${{ steps.selectversion.outputs.nextversion }}"
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
   
-    build:
-      needs: versioning
-      runs-on: ubuntu-latest
-      permissions: write-all
-      steps:
-        - uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-  
-        - uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
-        - uses: actions/setup-python@v4
-          with:
-            python-version: "3.9"
-  
-        - name: Version Test
-          id: versiontester
-          run: |
-              echo "checking github output variables : "
-              echo "Next version : ${{ needs.versioning.outputs.nextversion }}"
-  
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          if: github.ref == 'refs/heads/main'
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ needs.versioning.outputs.nextversion }}
-            release_name: Release ${{ needs.versioning.outputs.nextversion }}
-            draft: false
-            prerelease: false
-  
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
-  
-        - name: Build Release
-          run: pio run -e production
-          #export PLATFORMIO_BUILD_FLAGS="'-DNEXT_VERSION=\"${{ needs.versioning.outputs.nextversion }}-MCU4M-PROD\"'"
-  
-        - name: Archive Production results
-          uses: actions/upload-artifact@v3
-          with:
-            name: ${{ needs.versioning.outputs.nextversion }}.bin
-            path: .pio/build/production/firmware.bin
-            if-no-files-found: error
-  
-        
+      - name: Run all generic unit tests
+        run: pio test -e all_generic_unittests
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
+          gcov_include: '.pio/build/all_generic_unittests/*'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Build
+        run: pio run -e production
+
+      - name: Attach Binary to Workflow run
+        id: attachbinarytoworkflowrun
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.selectversion.outputs.nextversionfilename }}.bin
+          path: .pio/build/production/firmware.bin
+          if-no-files-found: error
+
+      - name: Release when on main branch
+        id: createrelease
+        uses: actions/create-release@v1
+        if: ${{ steps.versioninfo.outputs.branchname }} == 'main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.selectversion.outputs.nextversion }}
+          release_name: Release ${{ steps.selectversion.outputs.nextversion }}
+          draft: false
+          prerelease: false
+
+      - name: Attach Binary to Release
+        id: attachbinarytorelease
+        uses: actions/upload-release-asset@v1
+        if: ${{ steps.versioninfo.outputs.branchname }} == 'main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.createrelease.outputs.upload_url }}
+          asset_path: .pio/build/production/firmware.bin
+          asset_name: ${{ steps.selectversion.outputs.nextversionfilename }}.bin
+          asset_content_type: application/octet-stream
