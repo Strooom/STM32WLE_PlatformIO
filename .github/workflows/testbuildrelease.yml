@@ -118,6 +118,12 @@ jobs:
             echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
           fi
 
+      - name: Determine which version to build
+        id: showbuildversion
+        run: |
+          echo "Build Version   : ${{ steps.selectversion.outputs.buildversion }}"
+          echo "Build Timestamp : ${{ steps.versioninfo.outputs.buildtimestamp }}"
+  
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -128,7 +134,7 @@ jobs:
   
       - name: Run all generic unit tests
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.selectversion.outputs.buildtimestamp }}\"'"
           pio test -e all_generic_unittests
 
       - name: Upload coverage reports to Codecov
@@ -141,7 +147,7 @@ jobs:
 
       - name: Build
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.selectversion.outputs.buildtimestamp }}\"'"
           pio run -e production
 
       - name: Attach Binary to Workflow run
