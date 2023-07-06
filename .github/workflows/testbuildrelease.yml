@@ -134,7 +134,7 @@ jobs:
   
       - name: Run all generic unit tests
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-D BUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -D BUILD_TIMESTAMP=\"${{ steps.selectversion.outputs.buildtimestamp }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
           pio test -e all_generic_unittests
 
       - name: Upload coverage reports to Codecov
@@ -147,7 +147,7 @@ jobs:
 
       - name: Build
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-D BUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -D BUILD_TIMESTAMP=\"${{ steps.selectversion.outputs.buildtimestamp }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.selectversion.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
           pio run -e production
 
       - name: Attach Binary to Workflow run
