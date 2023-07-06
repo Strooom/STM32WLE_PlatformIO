@@ -10,17 +10,7 @@
 # https://docs.github.com/en/actions
 # https://naereen.github.io/badges/
 
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          if: github.ref == 'refs/heads/main'
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ needs.versioning.outputs.nextversion }}
-            release_name: Release ${{ needs.versioning.outputs.nextversion }}
-            draft: false
-            prerelease: false
+        
   
           #export PLATFORMIO_BUILD_FLAGS="'-DNEXT_VERSION=\"${{ needs.versioning.outputs.nextversion }}-MCU4M-PROD\"'"
   
@@ -45,15 +35,4 @@
           run: gh release upload ${{ steps.release.outputs.tag_name }} .pio/build/production/firmware.bin
 
 
-  #upload the artifacts to the release
-        - name: Upload Release Asset Prod
-          id: upload-release-asset-prod
-          uses: actions/upload-release-asset@v1
-          if: github.ref == 'refs/heads/main'
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: .pio/build/mumo_v2x_pcb/firmware.bin
-            asset_name: ${{ needs.versioncheck.outputs.nextversiontag }}.bin
-            asset_content_type: application/octet-stream
+  
