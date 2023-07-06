@@ -4,3 +4,5 @@
 # https://docs.github.com/en/actions
 # https://naereen.github.io/badges/
 
+# Todo
+* test that the version inside the firmware is correct, for both local builds and cloud builds
