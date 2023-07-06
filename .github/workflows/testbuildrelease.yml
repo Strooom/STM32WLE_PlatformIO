@@ -135,3 +135,9 @@ jobs:
         - name: Build Release
           run: pio run -e production
 
+        - name: Attach Binary to Workflow run
+          uses: actions/upload-artifact@v3
+          with:
+            name: ${{ steps.selectversion.outputs.nextversionfilename }}.bin
+            path: .pio/build/production/firmware.bin
+            if-no-files-found: error

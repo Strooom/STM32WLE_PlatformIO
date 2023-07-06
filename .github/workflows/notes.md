@@ -24,12 +24,6 @@
   
           #export PLATFORMIO_BUILD_FLAGS="'-DNEXT_VERSION=\"${{ needs.versioning.outputs.nextversion }}-MCU4M-PROD\"'"
   
-        - name: Archive Production results
-          uses: actions/upload-artifact@v3
-          with:
-            name: ${{ needs.versioning.outputs.nextversion }}.bin
-            path: .pio/build/production/firmware.bin
-            if-no-files-found: error
   
     release:
       name: release a new version
