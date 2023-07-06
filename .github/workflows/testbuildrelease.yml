@@ -1,84 +1,196 @@
-# https://github.com/marketplace/actions/release-please-action
-# https://www.conventionalcommits.org/en/v1.0.0/
-# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
-# https://docs.github.com/en/actions
-# https://naereen.github.io/badges/
-
 name: Test, Build and Release
 on:
-    workflow_dispatch:
-    push:
-        branches: [main, develop]
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
 
 jobs:
-    test:
-      name: run all unit tests
-      runs-on: ubuntu-latest
-      steps:
-        - name: CheckOut repository
-          uses: actions/checkout@v3
+  versioning:
+    name: Determine version, Test, Build and Release
+    permissions: write-all
 
-        - name: Enable cache
-          uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
+    runs-on: ubuntu-latest
+    outputs:
+      branchname: ${{ steps.versioninfo.outputs.branchname }}
+      commithash: ${{ steps.versioninfo.outputs.commithash }}
+      buildtimestamp: ${{ steps.versioninfo.outputs.buildtimestamp }}
+      lastmajornmbr: ${{ steps.versioninfo.outputs.lastmajornmbr }}
+      lastminornmbr: ${{ steps.versioninfo.outputs.lastminornmbr }}
+      lastpatchnmbr: ${{ steps.versioninfo.outputs.lastpatchnmbr }}
+      nextmajornmbr: ${{ steps.versioninfo.outputs.nextmajornmbr }}
+      nextminornmbr: ${{ steps.versioninfo.outputs.nextminornmbr }}
+      nextpatchnmbr: ${{ steps.versioninfo.outputs.nextpatchnmbr }}
+      lastversion: ${{ steps.versioninfo.outputs.lastversion }}
+      nextmajorversion: ${{ steps.versioninfo.outputs.nextmajorversion }}
+      nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
+      nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
+      nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
+      buildversion: ${{ steps.selectversion.outputs.buildversion }}
+      buildversionfilename: ${{ steps.selectversion.outputs.buildversionfilename }}
 
-        - name: Install Python 3.9
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.9'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
+      - name: Enable caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+              
+      - name: Get version data
+        id: versioninfo
+        run: |
+          echo "extract branch name from github_ref '${{ github.ref }}'"
+          declare branchname=$(echo "${{ github.ref }}" | cut -d'/' -f3)
+          echo "clean branch name = $branchname"
+          echo "extract commit short hash : $(git rev-parse --short HEAD)"
+          declare commithash=$(git rev-parse --short HEAD)
+          echo "extract build timestamp"
+          declare buildtimestamp=$(date "+%Y-%b-%d-%H:%M:%S")
+          echo "buildtimestamp = $buildtimestamp"
+          declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
+          echo "fulltag = $fulltag"
+          declare versiontag=$(echo $fulltag | cut -d'-' -f1)
+          echo "extract SemVer numbers from version tag $versiontag"
+          declare -i lastmajornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f1)
+          declare -i nextmajornmbr=$lastmajornmbr+1
+          echo "lastmajornmbr = $lastmajornmbr, nextmajornmbr = $nextmajornmbr"
+          declare -i lastminornmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f2)
+          declare -i nextminornmbr=$lastminornmbr+1
+          echo "lastminornmbr = $lastminornmbr, nextminornmbr = $nextminornmbr"
+          declare -i lastpatchnmbr=$(echo $versiontag | cut -c 2- | cut -d'.' -f3)
+          declare -i nextpatchnmbr=$lastpatchnmbr+1
+          echo "lastpatchnmbr = $lastpatchnmbr, nextpatchnmbr = $nextpatchnmbr"
+          echo "assemble complete version strings, for last and possible next versions"
+          declare lastversion="v$lastmajornmbr.$lastminornmbr.$lastpatchnmbr"
+          declare nextmajorversion="v$nextmajornmbr.$lastminornmbr.$lastpatchnmbr"
+          declare nextminorversion="v$lastmajornmbr.$nextminornmbr.$lastpatchnmbr"
+          declare nextpatchversion="v$lastmajornmbr.$lastminornmbr.$nextpatchnmbr"
+          declare nextdevelopversion="v$lastmajornmbr.$lastminornmbr.$lastpatchnmbr-$commithash"
+          echo "output to GitHub Actions output variables"
+          echo "branchname=$branchname" >> $GITHUB_OUTPUT
+          echo "commithash=$commithash" >> $GITHUB_OUTPUT
+          echo "buildtimestamp=$buildtimestamp" >> $GITHUB_OUTPUT
+          echo "lastversion=$lastversion" >> $GITHUB_OUTPUT
+          echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
+          echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
+          echo "nextpatchversion=$nextpatchversion" >> $GITHUB_OUTPUT
+          echo "nextdevelopversion=$nextdevelopversion" >> $GITHUB_OUTPUT
 
-        - name: Run all generic unit tests
-          run: pio test -e generic_all_tests
+      - name: Determine which version to build
+        id: selectversion
+        run: |
+          echo "Triggered from Branch : ${{ steps.versioninfo.outputs.branchname }}"
+          echo "Commit hash           : ${{ steps.versioninfo.outputs.commithash }}"
+          echo "Last version          : ${{ steps.versioninfo.outputs.lastversion }}"
+          echo "Possible Next versions :"
+          echo "  Next major version   : ${{ steps.versioninfo.outputs.nextmajorversion }}"
+          echo "  Next minor version   : ${{ steps.versioninfo.outputs.nextminorversion }}"
+          echo "  Next patch version   : ${{ steps.versioninfo.outputs.nextpatchversion }}"
+          echo "  Next develop version : ${{ steps.versioninfo.outputs.nextdevelopversion }}"
+          if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
+            echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
+            if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
+              declare buildversion="${{ steps.versioninfo.outputs.nextmajorversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
+            elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
+              declare buildversion="${{ steps.versioninfo.outputs.nextminorversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
+            else
+              declare buildversion="${{ steps.versioninfo.outputs.nextpatchversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
+            fi
+          else
+            declare buildversion="${{ steps.versioninfo.outputs.nextdevelopversion }}"
+            declare buildversionfilename=$(echo "${buildversion//./_}")
+            echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+            echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
+          fi
 
-    build:
-      name: build a binary
-      needs: test
-      runs-on: ubuntu-latest
-      steps:
-        - name: CheckOut repository
-          uses: actions/checkout@v3
+      - name: Show Build info
+        id: showbuildinfo
+        run: |
+          echo "Build Version   : ${{ steps.selectversion.outputs.buildversion }}"
+          echo "Build Timestamp : ${{ steps.versioninfo.outputs.buildtimestamp }}"
 
-        - name: Enable cache
-          uses: actions/cache@v3
-          with:
-            path: |
-              ~/.cache/pip
-              ~/.platformio/.cache
-            key: ${{ runner.os }}-pio
+      - name: Save Build info
+        uses: "DamianReeves/write-file-action@master"
+        with:
+          path: include/buildinfo.h
+          write-mode: overwrite
+          contents: |
+            // this file is generated by build and continuous integration scripts
+            #pragma once
+            #define BUILD_VERSION   "${{ steps.selectversion.outputs.buildversion }}"
+            #define BUILD_TIMESTAMP "${{ steps.versioninfo.outputs.buildtimestamp }}"
 
-        - name: Install Python 3.9
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.9'
+      - name: Verify Saved Build info
+        run: |
+          cat include/buildinfo.h    
 
-        - name: Install PlatformIO Core
-          run: pip install --upgrade platformio
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-        - name: Build
-          run: pio run -e mumo_v2x_pcb
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+  
+      - name: Run all generic unit tests
+        run: |
+          pio test -e all_generic_unittests
 
-    release:
-      name: release a new version
-      needs: build
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-        pull-requests: write
-      steps:
-        - name: Google's Release Please
-          uses: google-github-actions/release-please-action@v3
-          with:
-            package-name: release-please-action
-            release-type: simple
-        - name: Upload Release Package
-          if: ${{ steps.release.outputs.release_created }}
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: gh release upload ${{ steps.release.outputs.tag_name }} .pio/build/mumo_v2x_pcb/firmware.bin
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
+          gcov_include: '.pio/build/all_generic_unittests/*'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Build
+        run: |
+          pio run -e production
+
+      - name: Attach Binary to Workflow run
+        id: attachbinarytoworkflowrun
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.selectversion.outputs.buildversionfilename }}.bin
+          path: .pio/build/production/firmware.bin
+          if-no-files-found: error
+
+      - name: Release when on main branch
+        id: createrelease
+        uses: actions/create-release@v1
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.selectversion.outputs.buildversion }}
+          release_name: Release ${{ steps.selectversion.outputs.buildversion }}
+          draft: false
+          prerelease: false
+
+      - name: Attach Binary to Release
+        id: attachbinarytorelease
+        uses: actions/upload-release-asset@v1
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.createrelease.outputs.upload_url }}
+          asset_path: .pio/build/production/firmware.bin
+          asset_name: ${{ steps.selectversion.outputs.buildversionfilename }}.bin
+          asset_content_type: application/octet-stream
