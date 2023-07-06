@@ -122,7 +122,9 @@ jobs:
         run: pip install --upgrade platformio
   
       - name: Run all generic unit tests
-        run: pio test -e all_generic_unittests
+        run: |
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.nextdevelopversion }}\"'"
+          pio test -e all_generic_unittests
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
