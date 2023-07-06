@@ -29,6 +29,12 @@ void display::clearPixel(uint32_t x, uint32_t y) {
     displayBuffer[byteOffset] = displayBuffer[byteOffset] & ~(1 << bitOffset);
 }
 
+void display::clearAllPixels() {
+    for (uint32_t i = 0; i < bufferSize; i++) {
+        displayBuffer[i] = 0;
+    }
+}
+
 void display::changePixel(uint32_t x, uint32_t y, bool onOff) {
     if (!inBounds(x, y)) {        // NOTE : as our display is 200 x 200, we could already perform this check earlier (eg in graphics::drawPixel), and avoid executing some code in case the pixel is out of bounds
         return;

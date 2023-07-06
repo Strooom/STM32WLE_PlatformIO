@@ -35,6 +35,8 @@ class display {
     static void clearPixel(uint32_t x, uint32_t y);                     // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void changePixel(uint32_t x, uint32_t y, bool onOff);        // takes into account the rotation and mirroring settings, so clients don't have to worry about this
 
+    static void clearAllPixels();                                       // sets complete displayBuffer to zeroes
+
     static constexpr uint32_t width{200};                               // [pixels]
     static constexpr uint32_t height{200};                              // [pixels]
 
