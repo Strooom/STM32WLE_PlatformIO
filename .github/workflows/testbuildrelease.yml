@@ -13,6 +13,7 @@ jobs:
     outputs:
       branchname: ${{ steps.versioninfo.outputs.branchname }}
       commithash: ${{ steps.versioninfo.outputs.commithash }}
+      buildtimestamp: ${{ steps.versioninfo.outputs.buildtimestamp }}
       currentmajornmbr: ${{ steps.versioninfo.outputs.currentmajornmbr }}
       currentminornmbr: ${{ steps.versioninfo.outputs.currentminornmbr }}
       currentpatchnmbr: ${{ steps.versioninfo.outputs.currentpatchnmbr }}
@@ -24,8 +25,8 @@ jobs:
       nextminorversion: ${{ steps.versioninfo.outputs.nextminorversion }}
       nextpatchversion: ${{ steps.versioninfo.outputs.nextpatchversion }}
       nextdevelopversion: ${{ steps.versioninfo.outputs.nextdevelopversion }}
-      nextversion: ${{ steps.selectversion.outputs.nextversion }}
-      nextversionfilename: ${{ steps.selectversion.outputs.nextversionfilename }}
+      buildversion: ${{ steps.selectversion.outputs.buildversion }}
+      buildversionfilename: ${{ steps.selectversion.outputs.buildversionfilename }}
 
     steps:
       - name: Checkout Repository
@@ -49,6 +50,9 @@ jobs:
           echo "clean branch name = $branchname"
           echo "extract commit short hash : $(git rev-parse --short HEAD)"
           declare commithash=$(git rev-parse --short HEAD)
+          echo "extract build timestamp"
+          declare buildtimestamp=$(date "+%Y-%b-%d-%H:%M:%S")
+          echo "buildtimestamp = $buildtimestamp"
           declare fulltag=$(git describe --tag $(git rev-parse --verify refs/remotes/origin/main))
           echo "fulltag = $fulltag"
           declare versiontag=$(echo $fulltag | cut -d'-' -f1)
@@ -71,6 +75,7 @@ jobs:
           echo "output to GitHub Actions output variables"
           echo "branchname=$branchname" >> $GITHUB_OUTPUT
           echo "commithash=$commithash" >> $GITHUB_OUTPUT
+          echo "buildtimestamp=$buildtimestamp" >> $GITHUB_OUTPUT
           echo "currentversion=$currentversion" >> $GITHUB_OUTPUT
           echo "nextmajorversion=$nextmajorversion" >> $GITHUB_OUTPUT
           echo "nextminorversion=$nextminorversion" >> $GITHUB_OUTPUT
@@ -91,26 +96,26 @@ jobs:
           if [ "${{ steps.versioninfo.outputs.branchname }}" == "main" ]; then
             echo "Triggered from merge on main branch with commit title : ${{ github.event.head_commit.message }}"
             if [[ "${{ github.event.head_commit.message }}" == *"major"* ]]; then
-              declare nextversion="${{ steps.versioninfo.outputs.nextmajorversion }}"
-              declare nextversionfilename=$(echo "${nextversion//./_}")
-              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
-              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+              declare buildversion="${{ steps.versioninfo.outputs.nextmajorversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
             elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-              declare nextversion="${{ steps.versioninfo.outputs.nextminorversion }}"
-              declare nextversionfilename=$(echo "${nextversion//./_}")
-              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
-              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+              declare buildversion="${{ steps.versioninfo.outputs.nextminorversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
             else
-              declare nextversion="${{ steps.versioninfo.outputs.nextpatchversion }}"
-              declare nextversionfilename=$(echo "${nextversion//./_}")
-              echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
-              echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+              declare buildversion="${{ steps.versioninfo.outputs.nextpatchversion }}"
+              declare buildversionfilename=$(echo "${buildversion//./_}")
+              echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+              echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
             fi
           else
-            declare nextversion="${{ steps.versioninfo.outputs.nextdevelopversion }}"
-            declare nextversionfilename=$(echo "${nextversion//./_}")
-            echo "nextversion=$nextversion" >> $GITHUB_OUTPUT
-            echo "nextversionfilename=$nextversionfilename" >> $GITHUB_OUTPUT
+            declare buildversion="${{ steps.versioninfo.outputs.nextdevelopversion }}"
+            declare buildversionfilename=$(echo "${buildversion//./_}")
+            echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
+            echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
           fi
 
       - name: Setup Python
@@ -123,7 +128,7 @@ jobs:
   
       - name: Run all generic unit tests
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.nextdevelopversion }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
           pio test -e all_generic_unittests
 
       - name: Upload coverage reports to Codecov
@@ -136,14 +141,14 @@ jobs:
 
       - name: Build
         run: |
-          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.nextdevelopversion }}\"'"
+          export PLATFORMIO_BUILD_FLAGS="'-DBUILD_VERSION=\"${{ steps.versioninfo.outputs.buildversion }}\" -DBUILD_TIMESTAMP=\"${{ steps.versioninfo.outputs.buildtimestamp }}\"'"
           pio run -e production
 
       - name: Attach Binary to Workflow run
         id: attachbinarytoworkflowrun
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.selectversion.outputs.nextversionfilename }}.bin
+          name: ${{ steps.selectversion.outputs.buildversionfilename }}.bin
           path: .pio/build/production/firmware.bin
           if-no-files-found: error
 
@@ -154,8 +159,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.selectversion.outputs.nextversion }}
-          release_name: Release ${{ steps.selectversion.outputs.nextversion }}
+          tag_name: ${{ steps.selectversion.outputs.buildversion }}
+          release_name: Release ${{ steps.selectversion.outputs.buildversion }}
           draft: false
           prerelease: false
 
@@ -168,5 +173,5 @@ jobs:
         with:
           upload_url: ${{ steps.createrelease.outputs.upload_url }}
           asset_path: .pio/build/production/firmware.bin
-          asset_name: ${{ steps.selectversion.outputs.nextversionfilename }}.bin
+          asset_name: ${{ steps.selectversion.outputs.buildversionfilename }}.bin
           asset_content_type: application/octet-stream

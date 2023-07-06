@@ -11,5 +11,7 @@ void setup()
 void loop()
 {
   Serial.println(BUILD_VERSION);
+  Serial.println(BUILD_TIMESTAMP);
   HAL_Delay(1000);
 }
+
