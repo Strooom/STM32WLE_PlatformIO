@@ -25,9 +25,9 @@ void nonVolatileStorage::fill(uint8_t value) {
     }
 }
 
-// bool nonVolatileStorage::isInitialized() {
-//     return (0xFF != readBlock8(static_cast<uint32_t>(nvsMap::blockIndex::nvsMapVersion)));
-// }
+bool nonVolatileStorage::isInitialized() {
+    return (0xFF != readBlock8(static_cast<uint32_t>(nvsMap::blockIndex::nvsMapVersion)));
+}
 
 // void nonVolatileStorage::initializeOnce() {
 //     uint8_t data[16]{0};
@@ -55,53 +55,68 @@ void nonVolatileStorage::fill(uint8_t value) {
 //     writeBlock8(static_cast<uint32_t>(nvsMap::blockIndex::rx1Delay), 1U);
 // }
 
-// void nonVolatileStorage::initialize() {
-// }
+void nonVolatileStorage::readBlock(uint32_t blockIndex, uint8_t* destinationDataBuffer) {
+    if (nvsMap::isValidBlockIndex(blockIndex)) {
+        uint32_t startAddress = nvsMap::blocks[blockIndex].startAddress;
+        uint32_t length       = nvsMap::blocks[blockIndex].length;
+        nonVolatileStorage::read(startAddress, destinationDataBuffer, length);
+    }
+}
 
-// void nonVolatileStorage::readBlock(uint32_t blockIndex, uint8_t* destinationDataBuffer) {
-//     if (blockIndexIsValid(blockIndex)) {
-//         uint32_t startAddress = theNvsMap.blocks[blockIndex].startAddress;
-//         uint32_t length       = theNvsMap.blocks[blockIndex].length;
-//         read(startAddress, destinationDataBuffer, length);
-//     }
-// }
+void nonVolatileStorage::writeBlock(uint32_t blockIndex, uint8_t* sourceDataBuffer) {
+    if (nvsMap::isValidBlockIndex(blockIndex)) {
+        uint32_t startAddress = nvsMap::blocks[blockIndex].startAddress;
+        uint32_t length       = nvsMap::blocks[blockIndex].length;
+        nonVolatileStorage::write(startAddress, sourceDataBuffer, length);
+    }
+}
 
-// void nonVolatileStorage::writeBlock(uint32_t blockIndex, uint8_t* sourceDataBuffer) {
-//     if (blockIndexIsValid(blockIndex)) {
-//         uint32_t startAddress = theNvsMap.blocks[blockIndex].startAddress;
-//         uint32_t length       = theNvsMap.blocks[blockIndex].length;
-//         write(startAddress, sourceDataBuffer, length);
-//     }
-// }
+void nonVolatileStorage::writeBlock8(uint32_t blockIndex, uint8_t sourceData) {
+    writeBlock(blockIndex, &sourceData);
+}
 
-// uint32_t nonVolatileStorage::readBlock32(uint32_t blockIndex) {
-//     // TODO : make this simpler with a union
-//     uint8_t dataAsBytes[4];
-//     uint32_t result;
-//     readBlock(blockIndex, dataAsBytes);
-//     result = (static_cast<uint32_t>(dataAsBytes[0]) << 24) | (static_cast<uint32_t>(dataAsBytes[1]) << 16) | (static_cast<uint32_t>(dataAsBytes[2]) << 8) | static_cast<uint32_t>(dataAsBytes[3]);
-//     return result;
-// }
+uint8_t nonVolatileStorage::readBlock8(uint32_t blockIndex) {
+    uint8_t result;
+    readBlock(blockIndex, &result);
+    return result;
+}
 
-// void nonVolatileStorage::writeBlock8(uint32_t blockIndex, uint8_t sourceData) {
-//     writeBlock(blockIndex, &sourceData);
-// }
+uint32_t nonVolatileStorage::readBlock32(uint32_t blockIndex) {
+    // TODO : make this simpler with a union
+    uint8_t dataAsBytes[4];
+    uint32_t result;
+    readBlock(blockIndex, dataAsBytes);
+    result = (static_cast<uint32_t>(dataAsBytes[0]) << 24) | (static_cast<uint32_t>(dataAsBytes[1]) << 16) | (static_cast<uint32_t>(dataAsBytes[2]) << 8) | static_cast<uint32_t>(dataAsBytes[3]);
+    return result;
+}
 
-// uint8_t nonVolatileStorage::readBlock8(uint32_t blockIndex) {
-//     uint8_t result;
-//     readBlock(blockIndex, &result);
-//     return result;
-// }
+void nonVolatileStorage::writeBlock32(uint32_t blockIndex, uint32_t sourceData) {
+    // TODO : make this simpler with a union
+    uint8_t dataAsBytes[4];
+    dataAsBytes[0] = static_cast<uint8_t>((sourceData & 0xFF000000) >> 24);
+    dataAsBytes[1] = static_cast<uint8_t>((sourceData & 0x00FF0000) >> 16);
+    dataAsBytes[2] = static_cast<uint8_t>((sourceData & 0x0000FF00) >> 8);
+    dataAsBytes[3] = static_cast<uint8_t>((sourceData & 0x000000FF));
+    writeBlock(blockIndex, dataAsBytes);
+}
 
-// void nonVolatileStorage::writeBlock32(uint32_t blockIndex, uint32_t sourceData) {
-//     // TODO : make this simpler with a union
-//     uint8_t dataAsBytes[4];
-//     dataAsBytes[0] = static_cast<uint8_t>((sourceData & 0xFF000000) >> 24);
-//     dataAsBytes[1] = static_cast<uint8_t>((sourceData & 0x00FF0000) >> 16);
-//     dataAsBytes[2] = static_cast<uint8_t>((sourceData & 0x0000FF00) >> 8);
-//     dataAsBytes[3] = static_cast<uint8_t>((sourceData & 0x000000FF));
-//     writeBlock(blockIndex, dataAsBytes);
-// }
+uint32_t nonVolatileStorage::readBlock32b(uint32_t blockIndex) {
+    union {
+        uint8_t dataAsBytes[4];
+        uint32_t result;
+    };
+    readBlock(blockIndex, dataAsBytes);
+    return result;
+}
+
+void nonVolatileStorage::writeBlock32b(uint32_t blockIndex, uint32_t sourceData) {
+    union {
+        uint8_t dataAsBytes[4];
+        uint32_t result;
+    };
+    result = sourceData;
+    writeBlock(blockIndex, dataAsBytes);
+}
 
 // void nonVolatileStorage::readMeasurement(uint32_t measurementIndex, measurement& destination) {
 //     measurementIndex      = measurementIndex % nmbrMeasurementBlocks;

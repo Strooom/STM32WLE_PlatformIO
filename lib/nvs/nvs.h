@@ -11,18 +11,21 @@
 
 class nonVolatileStorage {
   public:
-    static bool isReady();        // testing if the EEPROM is found correctly on the I2C bus
-    // bool isInitialized();         // testing if the EEPROM is initialized or still has factory reset values of 0xFF
+    static bool isReady();              // testing if the EEPROM is found correctly on the I2C bus
+    static bool isInitialized();        // testing if the EEPROM is initialized or still has factory reset values of 0xFF
     // void initializeOnce();        // reset the EEPROM to meaningfull values at our very first boot
-    // void initialize();            // initialize the nvsMap for subsequent boots
 
     // // API to access the Settings section of the EEPROM
-    // uint8_t readBlock8(uint32_t blockIndex);                                    // reads uint8_t from a block in EEPROM
-    // void writeBlock8(uint32_t blockIndex, uint8_t sourceData);                  // write uint8_t data to a block in EEPROM
-    // uint32_t readBlock32(uint32_t blockIndex);                                  // reads uint32_t from a block in EEPROM
-    // void writeBlock32(uint32_t blockIndex, uint32_t sourceData);                // write uint32_t data to a block in EEPROM
-    // void readBlock(uint32_t blockIndex, uint8_t* destinationDataBuffer);        // reads the block from EEPROM and stores it in the destinationDataBuffer
-    // void writeBlock(uint32_t blockIndex, uint8_t* sourceDataBuffer);            // write data from sourceDataBuffer to the block in EEPROM
+    static void readBlock(uint32_t blockIndex, uint8_t* destinationDataBuffer);        // reads the block from EEPROM and stores it in the destinationDataBuffer
+    static void writeBlock(uint32_t blockIndex, uint8_t* sourceDataBuffer);            // write data from sourceDataBuffer to the block in EEPROM
+    static uint8_t readBlock8(uint32_t blockIndex);                                    // reads uint8_t from a block in EEPROM
+    static void writeBlock8(uint32_t blockIndex, uint8_t sourceData);                  // write uint8_t data to a block in EEPROM
+    static uint32_t readBlock32(uint32_t blockIndex);                                  // reads uint32_t from a block in EEPROM
+    static void writeBlock32(uint32_t blockIndex, uint32_t sourceData);                // write uint32_t data to a block in EEPROM
+
+    // alternate implementation using a union to translate between uint32_t and uint8_t[4]. Unfortunately it is not compatible with the original implementation -> we need to rewrite the EEPRom values
+    static uint32_t readBlock32b(uint32_t blockIndex);                          // reads uint32_t from a block in EEPROM
+    static void writeBlock32b(uint32_t blockIndex, uint32_t sourceData);        // write uint32_t data to a block in EEPROM
 
     // // API to access the Measurement section of the EEPROM
     // void readMeasurement(uint32_t measurementIndex, measurement& destination);        // reads the measurement from EEPROM and stores it in the destination measurement object

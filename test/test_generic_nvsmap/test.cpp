@@ -16,6 +16,8 @@ void test_blockOverlap() {
     }
 }
 
+// TODO : add a test to verify that all blocks are withing a single page of 128 bytes
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_isValidBlockIndex);
