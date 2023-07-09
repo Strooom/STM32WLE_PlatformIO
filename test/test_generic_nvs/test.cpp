@@ -85,11 +85,20 @@ void test_write_read_block_b() {
     TEST_ASSERT_EQUAL_UINT32(testValueDoubleWord, nonVolatileStorage::readBlock32(testIndex));
 }
 
+void test_is_initialized() {
+    TEST_ASSERT_TRUE(nonVolatileStorage::isReady());
+    TEST_ASSERT_FALSE(nonVolatileStorage::isInitialized());
+    uint32_t testIndex = static_cast<uint32_t>(nvsMap::blockIndex::nvsMapVersion);
+    nonVolatileStorage::writeBlock8(testIndex, 0x01);
+    TEST_ASSERT_TRUE(nonVolatileStorage::isInitialized());
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_write_read_bytes);
     RUN_TEST(test_erase);
     RUN_TEST(test_write_read_block);
     // RUN_TEST(test_write_read_block_b);
+    RUN_TEST(test_is_initialized);
     UNITY_END();
 }
