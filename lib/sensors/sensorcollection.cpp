@@ -44,14 +44,14 @@ sensorCollection::runResult sensorCollection::run() {
 
 void sensorCollection::discover() {
     // addSensor(measurementChannel::batteryVoltage, 7, 359, 7, 14);        // one measurement per day on battery, one per hour on USB power
-    //addSensor(measurementChannel::batteryVoltage, 0, 3, 0, 3);        // test Version
+    // addSensor(measurementChannel::batteryVoltage, 0, 3, 0, 3);        // test Version
     addSensor(measurementChannel::batteryVoltage, 3, 59, 3, 4);        // test Version
 
     if (bme680::isPresent()) {
-        bme680::initialize();                                                               // this reads the calibration data from the sensor
+        bme680::initialize();        // this reads the calibration data from the sensor
         // addSensor(measurementChannel::BME680SensorTemperature, 3, 14, 3, 14);               // one measurement per 30 minutes
-        //addSensor(measurementChannel::BME680SensorRelativeHumidity, 3, 29, 3, 29);          // one measurement per 60 minutes
-        //addSensor(measurementChannel::BME680SensorBarometricPressure, 3, 59, 3, 59);        // one measurement per 120 minutes
+        // addSensor(measurementChannel::BME680SensorRelativeHumidity, 3, 29, 3, 29);          // one measurement per 60 minutes
+        // addSensor(measurementChannel::BME680SensorBarometricPressure, 3, 59, 3, 59);        // one measurement per 120 minutes
         addSensor(measurementChannel::BME680SensorTemperature, 3, 59, 3, 4);               // test
         addSensor(measurementChannel::BME680SensorRelativeHumidity, 3, 59, 3, 4);          // test
         addSensor(measurementChannel::BME680SensorBarometricPressure, 3, 59, 3, 4);        // test
@@ -94,10 +94,10 @@ void sensorCollection::addSensor(measurementChannel aType, uint32_t oversampling
 
 void sensorCollection::addMeasurement(measurementChannel aType, float aValue) {
     if (actualNumberOfMeasurements < maxNumberOfSensors) {
-        latestMeasurements[actualNumberOfMeasurements].timestamp.asUInt32 = measurement::getTimeStamp();
-        latestMeasurements[actualNumberOfMeasurements].type              = aType;
-        latestMeasurements[actualNumberOfMeasurements].value.asFloat      = aValue;
-        latestMeasurements[actualNumberOfMeasurements].flags             = 0;
+        latestMeasurements[actualNumberOfMeasurements].timestamp.asDoubleWord = measurement::getTimeStamp();
+        latestMeasurements[actualNumberOfMeasurements].type                   = aType;
+        latestMeasurements[actualNumberOfMeasurements].value.asFloat          = aValue;
+        latestMeasurements[actualNumberOfMeasurements].flags                  = 0;
         actualNumberOfMeasurements++;
     }
 }

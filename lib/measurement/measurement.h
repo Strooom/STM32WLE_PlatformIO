@@ -18,12 +18,12 @@ class measurement {
     static constexpr uint8_t priority{0b1100'0000};                   // bit 7..6
 
     union {
-        uint32_t asUInt32;         // using UNIX time : seconds elapsed since 1970 Jan 01 00:00:00 UTC
+        uint32_t asDoubleWord;         // using UNIX time : seconds elapsed since 1970 Jan 01 00:00:00 UTC
         uint8_t asBytes[4];        //
     } timestamp;
     union {
         float asFloat;              // value can be of any data type, but I assume it always fits in 4 bytes..
-        uint32_t asUInt32;          //
+        uint32_t asDoubleWord;          //
         uint8_t asBytes[4];         //
     } value;
     measurementChannel type;        // defines what data the measurement contains, eg temperature, humidity, pressure, etc
