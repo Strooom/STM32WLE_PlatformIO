@@ -118,8 +118,8 @@ void test_getByteOffset() {
 }
 
 void test_getBitOffset() {
-    TEST_ASSERT_EQUAL(0, display::getBitOffset(0));
-    TEST_ASSERT_EQUAL(7, display::getBitOffset(display::width - 1));
+    TEST_ASSERT_EQUAL(7, display::getBitOffset(0));
+    TEST_ASSERT_EQUAL(0, display::getBitOffset(display::width - 1));
 }
 
 void test_setPixel() {
@@ -128,24 +128,52 @@ void test_setPixel() {
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
     display::setPixel(0, 0);
+    TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[0]);
     display::setPixel((display::width - 1), 0);
+    TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[24]);
     display::setPixel(0, (display::height - 1));
+    TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[5000 - 25]);
     display::setPixel((display::width - 1), (display::height - 1));
-    TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[0]);
-    // TODO : test all 4 corners of the display
+    TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[5000 - 1]);
 }
 
 void test_clearPixel() {
     // set all pixels
     for (uint32_t i = 0; i < display::bufferSize; i++) {
-        display::displayBuffer[i] = 0xFF;   // sets all pixels on, so we can easily test the clearPixel function
+        display::displayBuffer[i] = 0xFF;        // sets all pixels on, so we can easily test the clearPixel function
     }
+    display::mirroring = displayMirroring::none;
+    display::rotation  = displayRotation::rotation0;
+
     display::clearPixel(0, 0);
+    TEST_ASSERT_EQUAL(0b01111111, display::displayBuffer[0]);
     display::clearPixel((display::width - 1), 0);
+    TEST_ASSERT_EQUAL(0b11111110, display::displayBuffer[24]);
     display::clearPixel(0, (display::height - 1));
+    TEST_ASSERT_EQUAL(0b01111111, display::displayBuffer[5000 - 25]);
     display::clearPixel((display::width - 1), (display::height - 1));
-    TEST_ASSERT_EQUAL(0b11111110, display::displayBuffer[0]);
-    // TODO : test all 4 corners of the display
+    TEST_ASSERT_EQUAL(0b11111110, display::displayBuffer[5000 - 1]);
+}
+
+void test_changePixel() {
+    display::clearAllPixels();
+    display::mirroring = displayMirroring::none;
+    display::rotation  = displayRotation::rotation0;
+    for (uint32_t y = 0; y < display::height; y++) {
+        for (uint32_t x = 0; x < display::width; x++) {
+            display::changePixel(x, y, ((x + y) % 2));
+        }
+    }
+
+    for (uint32_t y = 0; y < display::height; y++) {
+        for (uint32_t x = 0; x < (display::width / 8); x++) {
+            if (y % 2) {
+                TEST_ASSERT_EQUAL(0b10101010, display::displayBuffer[25 * y + x]);
+            } else {
+                TEST_ASSERT_EQUAL(0b01010101, display::displayBuffer[25 * y + x]);
+            }
+        }
+    }
 }
 
 int main(int argc, char **argv) {
@@ -159,6 +187,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_getBitOffset);
     RUN_TEST(test_setPixel);
     RUN_TEST(test_clearPixel);
-
+    RUN_TEST(test_changePixel);
     UNITY_END();
 }

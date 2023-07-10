@@ -17,6 +17,54 @@ displayRotation display::rotation{displayRotation::rotation0};
 displayMirroring display::mirroring{displayMirroring::none};
 uint8_t display::displayBuffer[display::bufferSize]{0};
 
+void display::initialize() {
+    reset();
+    waitWhileBusy();
+    
+    uint8_t commandData[4]{0};
+
+    commandData[0] = 0x7C;
+    commandData[1] = 0x00;
+    commandData[2] = 0x00;
+    writeCommand(SSD1681Commands::DRIVER_OUTPUT_CONTROL, commandData, 3);
+    waitWhileBusy();
+
+    commandData[0] = 0x01;
+    writeCommand(SSD1681Commands::DATA_ENTRY_MODE_SETTING, commandData, 1);
+    waitWhileBusy();
+
+    commandData[0] = 0x00;
+    commandData[1] = 0x18;
+    writeCommand(SSD1681Commands::SET_RAM_X_ADDRESS_START_END_POSITION, commandData, 2);
+    waitWhileBusy();
+
+    commandData[0] = 0xC7;
+    commandData[1] = 0x00;
+    commandData[2] = 0x00;
+    commandData[3] = 0x00;
+    writeCommand(SSD1681Commands::SET_RAM_Y_ADDRESS_START_END_POSITION, commandData, 4);
+    waitWhileBusy();
+
+    commandData[0] = 0x05;
+    writeCommand(SSD1681Commands::BORDER_WAVEFORM_CONTROL, commandData, 1);
+    waitWhileBusy();
+
+    commandData[0] = 0x0;
+    writeCommand(SSD1681Commands::SET_RAM_X_ADDRESS_COUNTER, commandData, 1);
+    waitWhileBusy();
+
+    commandData[0] = 0xC7;
+    commandData[1] = 0x00;
+    writeCommand(SSD1681Commands::SET_RAM_Y_ADDRESS_COUNTER, commandData, 2);
+    waitWhileBusy();
+}
+
+void display::goSleep() {
+    uint8_t commandData[1]{0x01};
+    writeCommand(SSD1681Commands::DEEP_SLEEP_MODE, commandData, 1);
+}
+
+
 void display::setPixel(uint32_t x, uint32_t y) {
     uint32_t byteOffset       = getByteOffset(x, y);
     uint32_t bitOffset        = getBitOffset(x);
@@ -70,7 +118,7 @@ uint32_t display::getByteOffset(uint32_t x, uint32_t y) {
 }
 
 uint32_t display::getBitOffset(uint32_t x) {
-    return (x % 8);
+    return (7-(x % 8));
 }
 
 void display::rotateAndMirrorCoordinates(uint32_t& x, uint32_t& y) {
@@ -184,39 +232,7 @@ void display::waitWhileBusy() {
     }
 }
 
-void display::wakeUp() {
-    reset();
-    waitWhileBusy();
-}
 
-void display::initialize() {
-    uint8_t commandData[4]{0};
-
-    commandData[0] = 0x7C;
-    commandData[1] = 0x00;
-    commandData[2] = 0x00;
-    writeCommand(SSD1681Commands::DRIVER_OUTPUT_CONTROL, commandData, 3);
-
-    commandData[0] = 0x01;
-    writeCommand(SSD1681Commands::DATA_ENTRY_MODE_SETTING, commandData, 1);
-
-    commandData[0] = 0x00;
-    commandData[1] = 0x18;
-    writeCommand(SSD1681Commands::SET_RAM_X_ADDRESS_START_END_POSITION, commandData, 2);
-
-    commandData[0] = 0xC7;
-    commandData[1] = 0x00;
-    commandData[2] = 0x00;
-    commandData[3] = 0x00;
-    writeCommand(SSD1681Commands::SET_RAM_Y_ADDRESS_START_END_POSITION, commandData, 4);
-
-    // TODO : some more initialization code required here.. need to study the datasheet first
-}
-
-void display::goSleep() {
-    uint8_t commandData[1]{0x01};
-    writeCommand(SSD1681Commands::DEEP_SLEEP_MODE, commandData, 1);
-}
 
 void display::set()
 // EPD* epd,
@@ -315,8 +331,5 @@ void display::write(uint8_t data) {}
 void display::writeData(uint8_t data) {}
 void display::writeData(uint8_t* data, uint32_t length) {}
 void display::writeCommand(SSD1681Commands theCommand, uint8_t* theData, uint32_t dataLength) {}
-
-void display::wakeUp() {}
-void display::initialize() {}
-
+void display::waitWhileBusy() {}
 #endif

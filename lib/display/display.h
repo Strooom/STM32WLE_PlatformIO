@@ -23,10 +23,8 @@ enum class displayMirroring : uint32_t {
 
 class display {
   public:
-    static void wakeUp();
-    static void initialize();
-    static void goSleep();
-
+    static void initialize();                                           // wakeup through HW reset, then configure display
+    static void goSleep();                                              //
     void set();                                                         // write displayBuffer to display
     void clear();                                                       // write blank data to display
     void show();                                                        // refresh display
