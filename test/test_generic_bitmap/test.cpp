@@ -75,6 +75,15 @@ void test_getPixel() {
     }
 }
 
+void test_getPixelOutOfBounds() {
+    const uint8_t testPixelData[8] = {0xFF, 0xFF};
+    bitmap testBitMap{16, 1, testPixelData};
+    TEST_ASSERT_TRUE(testBitMap.getPixel(0, 0));
+    TEST_ASSERT_TRUE(testBitMap.getPixel(15, 0));
+    TEST_ASSERT_FALSE(testBitMap.getPixel(16, 0));
+    TEST_ASSERT_FALSE(testBitMap.getPixel(0, 1));
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_bytesPerRow);
@@ -82,5 +91,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_getBitIndex);
     RUN_TEST(test_getByteIndex);
     RUN_TEST(test_getPixel);
+    RUN_TEST(test_getPixelOutOfBounds);
     UNITY_END();
 }

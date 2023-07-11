@@ -176,6 +176,20 @@ void test_changePixel() {
     }
 }
 
+void test_changePixelOutOfBounds() {
+    display::clearAllPixels();
+    display::mirroring = displayMirroring::none;
+    display::rotation  = displayRotation::rotation0;
+
+    display::changePixel(200, 0, true);        // set some pixels outside the display area
+    display::changePixel(0, 200, true);
+    display::changePixel(200, 200, true);
+
+    for (uint32_t i = 0; i < display::bufferSize; i++) {
+        TEST_ASSERT_EQUAL(0, display::displayBuffer[i]);        // all of the displaybuffer should still be cleared
+    }
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_inBounds);
@@ -188,5 +202,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_setPixel);
     RUN_TEST(test_clearPixel);
     RUN_TEST(test_changePixel);
+    RUN_TEST(test_changePixelOutOfBounds);
     UNITY_END();
 }
