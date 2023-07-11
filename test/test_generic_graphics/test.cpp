@@ -17,18 +17,25 @@ void test_drawPixel() {
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
 
-    TEST_ASSERT_EQUAL(0, display::displayBuffer[0]);
     graphics::drawPixel(0, 0, graphics::color::black);
     TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[0]);
-    TEST_ASSERT_EQUAL(0, display::displayBuffer[24]);
+    graphics::drawPixel(0, 0, graphics::color::white);
+    TEST_ASSERT_EQUAL(0, display::displayBuffer[0]);
+
     graphics::drawPixel((display::width - 1), 0, graphics::color::black);
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[24]);
-    TEST_ASSERT_EQUAL(0, display::displayBuffer[4999 - 24]);
+    graphics::drawPixel((display::width - 1), 0, graphics::color::white);
+    TEST_ASSERT_EQUAL(0, display::displayBuffer[24]);
+
     graphics::drawPixel(0, (display::height - 1), graphics::color::black);
     TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[4999 - 24]);
-    TEST_ASSERT_EQUAL(0, display::displayBuffer[4999]);
+    graphics::drawPixel(0, (display::height - 1), graphics::color::white);
+    TEST_ASSERT_EQUAL(0, display::displayBuffer[4999 - 24]);
+
     graphics::drawPixel((display::width - 1), (display::height - 1), graphics::color::black);
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[4999]);
+    graphics::drawPixel((display::width - 1), (display::height - 1), graphics::color::white);
+    TEST_ASSERT_EQUAL(0, display::displayBuffer[4999]);
 }
 
 void test_drawHorizontalLine() {
@@ -43,6 +50,14 @@ void test_drawHorizontalLine() {
     for (auto i = 25; i < 5000; i++) {
         TEST_ASSERT_EQUAL(0x00, display::displayBuffer[i]);
     }
+    display::clearAllPixels();
+    graphics::drawHorizontalLine(display::width - 1, 0, 0, graphics::color::black);
+    for (auto i = 0; i < 25; i++) {
+        TEST_ASSERT_EQUAL(0xFF, display::displayBuffer[i]);
+    }
+    for (auto i = 25; i < 5000; i++) {
+        TEST_ASSERT_EQUAL(0x00, display::displayBuffer[i]);
+    }
 }
 
 void test_drawVerticalLine() {
@@ -51,6 +66,12 @@ void test_drawVerticalLine() {
     display::rotation  = displayRotation::rotation0;
 
     graphics::drawVerticalLine(0, 0, display::height - 1, graphics::color::black);
+    for (auto i = 0; i < 200; i++) {
+        TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[i * 25]);
+    }
+    display::clearAllPixels();
+
+    graphics::drawVerticalLine(0, display::height - 1, 0, graphics::color::black);
     for (auto i = 0; i < 200; i++) {
         TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[i * 25]);
     }
