@@ -37,8 +37,8 @@ const interpolationPoint battery::voltageVsCharge[nmbrBatteryTypes][nmbrInterpol
         {2.80F, 0},
         {3.00F, 25},
         {3.10F, 50},
-        {3.15F, 100},
-        {3.25F, 150},
+        {3.20F, 100},
+        {3.20F, 150},
         {3.30F, 200},
         {3.40F, 225},
         {3.60F, 255},
@@ -82,14 +82,13 @@ uint8_t battery::calculateCharge(float voltage) {
     return 0;
 }
 
-bool battery::checkVoltageVsCharge() {
-    for (auto batteryTypeIndex = 1; batteryTypeIndex < nmbrBatteryTypes; batteryTypeIndex++) {
-        for (auto interpolationPointIndex = 0; interpolationPointIndex < nmbrInterpolationPoints - 2; interpolationPointIndex++) {
-            if (voltageVsCharge[batteryTypeIndex][interpolationPointIndex].voltage >= voltageVsCharge[batteryTypeIndex ][interpolationPointIndex + 1].voltage) {
-                return false;
-            }
+bool battery::checkVoltageVsCharge(uint32_t batteryTypeIndex) {
+    for (auto interpolationPointIndex = 0; interpolationPointIndex < nmbrInterpolationPoints - 2; interpolationPointIndex++) {
+        if (voltageVsCharge[batteryTypeIndex][interpolationPointIndex].voltage >= voltageVsCharge[batteryTypeIndex][interpolationPointIndex + 1].voltage) {
+            return false;
         }
     }
+
     return true;
 }
 

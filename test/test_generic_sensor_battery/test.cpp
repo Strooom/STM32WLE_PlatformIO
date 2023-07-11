@@ -4,8 +4,9 @@
 void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
 
-void test_check() {
-    TEST_ASSERT_TRUE(battery::checkVoltageVsCharge());
+void test_checkVoltageVsCharge() {
+    TEST_ASSERT_TRUE(battery::checkVoltageVsCharge(0));
+    TEST_ASSERT_FALSE(battery::checkVoltageVsCharge(3));        // Battery type 3 has intentionally an error in its voltage vs charge table
 }
 
 void test_interpolation() {
@@ -19,7 +20,7 @@ void test_interpolation() {
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
-    RUN_TEST(test_check);
+    RUN_TEST(test_checkVoltageVsCharge);
     RUN_TEST(test_interpolation);
     UNITY_END();
 }

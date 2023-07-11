@@ -32,7 +32,7 @@ public:
 #ifndef unitTesting
   private:
 #endif
-  static bool checkVoltageVsCharge(); // this checks that the voltage/charge curve is monotone, ie that the voltage is always increasing when the charge is increasing
+  static bool checkVoltageVsCharge(uint32_t batteryTypeIndex); // this checks that the voltage/charge curve is monotone, ie that the voltage is always increasing when the charge is increasing
   static const interpolationPoint voltageVsCharge[nmbrBatteryTypes][nmbrInterpolationPoints];
   static uint8_t calculateCharge(float voltage);
 };

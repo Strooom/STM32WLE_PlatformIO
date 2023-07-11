@@ -16,8 +16,8 @@ class measurementCollection {
   public:
     void add(measurement newSample);
     void get();
-
     uint32_t getNmbrToBeTransmitted(); // how many measurements are still to be transmitted
+
   private:
     uint32_t head{0};
     uint32_t level{0};
