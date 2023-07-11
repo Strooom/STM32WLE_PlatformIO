@@ -60,3 +60,4 @@ class font {
 * with all possible transformations of the display, it's not really possible to directly write the bytes into the displayBuffer : you need to draw pixel by pixel
 * when erasing (an area or the whole display), you only need to draw the active pixels
 * otherwise you need to also draw the inactive pixels..
+* drawing a character, is basically drawing a bitmap (of a certain size), so it makes sense to do draw bitmaps first and to use it for drawing character
