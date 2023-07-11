@@ -23,10 +23,8 @@ enum class displayMirroring : uint32_t {
 
 class display {
   public:
-    static void wakeUp();
-    static void initialize();
-    static void goSleep();
-
+    static void initialize();                                           // wakeup through HW reset, then configure display
+    static void goSleep();                                              //
     void set();                                                         // write displayBuffer to display
     void clear();                                                       // write blank data to display
     void show();                                                        // refresh display
@@ -34,6 +32,8 @@ class display {
     static void setPixel(uint32_t x, uint32_t y);                       // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void clearPixel(uint32_t x, uint32_t y);                     // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void changePixel(uint32_t x, uint32_t y, bool onOff);        // takes into account the rotation and mirroring settings, so clients don't have to worry about this
+
+    static void clearAllPixels();                                       // sets complete displayBuffer to zeroes
 
     static constexpr uint32_t width{200};                               // [pixels]
     static constexpr uint32_t height{200};                              // [pixels]
