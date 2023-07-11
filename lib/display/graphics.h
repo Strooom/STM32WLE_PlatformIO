@@ -30,6 +30,7 @@ class graphics {
     static void drawBitMap(uint32_t xStart, uint32_t yStart, color theColor, uint8_t* theBitmap);
 
 #ifndef unitTesting
+
   private:
 #endif
     static colorMode theColorMode;

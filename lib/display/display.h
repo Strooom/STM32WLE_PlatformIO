@@ -39,6 +39,7 @@ class display {
     static constexpr uint32_t height{200};                              // [pixels]
 
 #ifndef unitTesting
+
   private:
 #endif
 

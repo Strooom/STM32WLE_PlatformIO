@@ -29,6 +29,7 @@ class sensor {
     static constexpr uint32_t maxOversampling{15};        // average x samples before storing it in the sample collection
 
 #ifndef unitTesting
+
   private:
 #endif
     measurementChannel type{measurementChannel::none};        // defines the type of sensor
