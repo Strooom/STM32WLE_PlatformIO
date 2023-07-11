@@ -1,4 +1,5 @@
 ![example workflow](https://github.com/strooom/STM32WLE_PlatformIO/actions/workflows/testbuildrelease.yml/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/strooom/stm32wle_platformio/badge)](https://www.codefactor.io/repository/github/strooom/stm32wle_platformio)
 [![codecov](https://codecov.io/gh/Strooom/STM32WLE_PlatformIO/branch/develop/graph/badge.svg?token=IC37G15NC9)](https://codecov.io/gh/Strooom/STM32WLE_PlatformIO)
 
 # STM32WLE_PlatformIO
