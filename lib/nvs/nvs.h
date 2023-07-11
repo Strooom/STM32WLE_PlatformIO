@@ -40,6 +40,7 @@ class nonVolatileStorage {
     static constexpr uint8_t writeCycleTime{4};        // [ms] : the BR24G512xxx EEPROM requires a wait time of 3.5 ms after writing to internally store the data
 
 #ifndef unitTesting
+
   private:
 #endif
 
