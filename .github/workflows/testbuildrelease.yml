@@ -41,7 +41,7 @@ jobs:
             ~/.cache/pip
             ~/.platformio/.cache
           key: ${{ runner.os }}-pio
-              
+
       - name: Get version data
         id: versioninfo
         run: |
@@ -137,7 +137,7 @@ jobs:
 
       - name: Verify Saved Build info
         run: |
-          cat include/buildinfo.h    
+          cat include/buildinfo.h
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -146,7 +146,7 @@ jobs:
 
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
-  
+
       - name: Run all generic unit tests
         run: |
           pio test -e all_generic_unittests
@@ -174,7 +174,7 @@ jobs:
       - name: Release when on main branch
         id: createrelease
         uses: actions/create-release@v1
-        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -186,7 +186,7 @@ jobs:
       - name: Attach Binary to Release
         id: attachbinarytorelease
         uses: actions/upload-release-asset@v1
-        if: ${{ steps.versioninfo.outputs.branchname == 'main'}} 
+        if: ${{ steps.versioninfo.outputs.branchname == 'main'}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

@@ -96,7 +96,7 @@ void display::changePixel(uint32_t x, uint32_t y, bool onOff) {
 }
 
 bool display::inBounds(uint32_t c) {
-    return (c >= 0 && c < display::width);
+    return (c < display::width);
 }
 
 bool display::inBounds(uint32_t x, uint32_t y) {

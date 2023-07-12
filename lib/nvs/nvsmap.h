@@ -40,6 +40,7 @@ class nvsMap {
     static bool isValidBlockIndex(uint32_t blockIndex);
 
 #ifndef unitTesting
+
   private:
 #endif
     static const block blocks[static_cast<uint32_t>(blockIndex::numberOfBlocks)];

@@ -56,7 +56,8 @@ class logging {
     }
 
 #ifndef unitTesting
-//  private:
+
+  private:
 #endif
     static char buffer[bufferLength];          // in this buffer the snprintf is expanded before the contents is being sent to one or more of the destinations
     static uint32_t activeSources;             // bitfield of active logging sources

@@ -8,7 +8,6 @@
 #pragma once
 #include <stdint.h>
 
-
 // This is a circular buffer template, so it works FIFO
 // push() on an already full buffer, overwrites the oldest event.
 // pop() on an empty buffer, returns 0x00
@@ -77,7 +76,8 @@ class circularBuffer {
     };
 
 #ifndef unitTesting
-//  private:
+
+  private:
 #endif
     uint32_t head{0};
     uint32_t level{0};

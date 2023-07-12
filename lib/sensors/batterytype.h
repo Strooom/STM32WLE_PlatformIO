@@ -13,7 +13,6 @@ enum class batteryType : uint8_t {
     liFePO4_1500mAh  = 0x01,        // 18650 LiFePO4 battery
     alkaline_1200mAh = 0x02,        // 2 AA Alkaline batteries
     saft             = 0x03,        // 1 AA Saft LS14500 battery
-
 };
 
 constexpr uint32_t nmbrBatteryTypes{4};

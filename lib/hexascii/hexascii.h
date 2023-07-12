@@ -15,6 +15,7 @@ public:
     static void binaryArrayToHexString(const uint8_t *aBinaryArray, uint32_t aBinaryArrayLength, char *aHexString); // convert binary array to HEX-ASCII string
 
 #ifndef unitTesting
+
 private:
 #endif
     static uint8_t toUpperCase(uint8_t aCharacter);
