@@ -12,7 +12,7 @@ void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
 
 void test_drawPixel() {
-    // draw pixel in the 4 corners, and check the displayBuffer before and after
+    // draw a black pixel in the 4 corners, and check the displayBuffer, then draw a white pixel and check again
     display::clearAllPixels();
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;

@@ -1,3 +1,13 @@
 #include "font.h"
 
-font::font(uint32_t thePixelheight, uint32_t thePixelwidth, const uint8_t* thePixelData) : pixelheight(thePixelheight), pixelwidth(thePixelwidth), pixelData(thePixelData) {}
+bool font::isInBounds(uint8_t asciiCode) {
+    return (asciiCode >= asciiStart && asciiCode <= asciiEnd);
+};
+
+uint32_t font::byteOffset(uint8_t asciiCode) const {
+    if (isInBounds(asciiCode)) {
+        return (asciiCode - asciiStart) * bytesPerRow * pixelHeight;
+    } else {
+        return 0;
+    }
+};
