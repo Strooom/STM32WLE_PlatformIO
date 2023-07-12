@@ -21,6 +21,7 @@ class aesKey {
 
 
 #ifndef unitTesting
+
   private:
 #endif
     union {

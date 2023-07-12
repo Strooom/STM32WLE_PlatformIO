@@ -98,7 +98,8 @@ class linearBuffer {
     // #################################
 
 #ifndef unitTesting
-//  private:
+
+  private:
 #endif
     void shiftLeft(uint32_t shiftAmount) {
         if (shiftAmount < level) {
@@ -124,7 +125,10 @@ class linearBuffer {
         }
     }
 
-    //  private:
+#ifndef unitTesting
+
+  private:
+#endif
     uint32_t level{0};                        // how many bytes are in the buffer
     uint8_t theBuffer[bufferLength]{};        // the array where the actual data is stored
 };

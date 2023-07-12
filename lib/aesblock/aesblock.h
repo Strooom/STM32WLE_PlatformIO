@@ -19,6 +19,7 @@ class aesBlock {
     const uint32_t *asWords();                                // return the encrypted block as words
 
 #ifndef unitTesting
+
   private:
 #endif
     union {

@@ -20,6 +20,7 @@ class font {
     static constexpr uint8_t asciiEnd   = 126;
 
 #ifndef unitTesting
+
   private:
 #endif
     static bool isInBounds(uint8_t asciiCode);

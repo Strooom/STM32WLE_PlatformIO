@@ -23,6 +23,7 @@ class sensorCollection {
     uint32_t actualNumberOfMeasurements{0};                    // counts the number of measurements in the latestMeasurements array
 
 #ifndef unitTesting
+
   private:
 #endif
     uint32_t actualNumberOfSensors{0};

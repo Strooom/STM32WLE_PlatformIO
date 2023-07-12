@@ -30,6 +30,7 @@ class graphics {
     static void drawText(uint32_t xStart, uint32_t yStart, font theFont, unsigned char* theText);
 
 #ifndef unitTesting
+
   private:
 #endif
     static void sort(uint32_t& c1, uint32_t& c2);
