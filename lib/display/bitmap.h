@@ -15,10 +15,13 @@ class bitmap {
     const uint32_t width;
     const uint32_t height;
     const uint32_t bytesPerRow;
-    inline bool isInBounds(uint32_t x, uint32_t y) const { return (x < width && y < height); };
-    inline uint32_t getByteIndex(uint32_t x, uint32_t y) const { return (((height - 1) - y) * bytesPerRow) + (x / 8); };
-    inline uint8_t getBitIndex(uint32_t x) const { return 7 - (x % 8); };
+
+#ifndef unitTesting
 
   private:
+#endif
+    inline bool isInBounds(uint32_t x, uint32_t y) const { return (x < width && y < height); };
+    inline uint8_t getBitIndex(uint32_t x) const { return 7 - (x % 8); };                                                       // no bounds checking here, private helper function
+    inline uint32_t getByteIndex(uint32_t x, uint32_t y) const { return (((height - 1) - y) * bytesPerRow) + (x / 8); };        // no bounds checking here, private helper function
     const uint8_t* const pixelData;
 };

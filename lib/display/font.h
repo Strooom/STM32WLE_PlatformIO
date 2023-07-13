@@ -9,9 +9,11 @@
 
 class font {
   public:
-    font(const uint32_t thePixelHeight, const uint32_t thePixelWidth, const uint8_t* thePixelData) : pixelHeight(thePixelHeight), pixelWidth(thePixelWidth), bytesPerRow(((thePixelWidth - 1) / 8) + 1), bytesPerCharacter(pixelHeight * bytesPerRow), pixelData(thePixelData){};
-    const uint32_t pixelHeight;
-    const uint32_t pixelWidth;
+    font(const uint32_t thePixelHeight, const uint32_t thePixelWidth, const uint8_t* thePixelData) : height(thePixelHeight), width(thePixelWidth), bytesPerRow(((thePixelWidth - 1) / 8) + 1), bytesPerCharacter(height * bytesPerRow), pixelData(thePixelData){};
+    bool getPixel(uint32_t x, uint32_t y, uint8_t asciiCode) const;
+
+    const uint32_t height;        // [pixels]
+    const uint32_t width;         // [pixels]
     const uint32_t bytesPerRow;
     const uint32_t bytesPerCharacter;
     const uint8_t* pixelData;
@@ -23,6 +25,9 @@ class font {
 
   private:
 #endif
-    static bool isInBounds(uint8_t asciiCode);
-    uint32_t byteOffset(uint8_t asciiCode) const;
+    inline static bool isInBounds(uint8_t asciiCode) { return (asciiCode >= asciiStart && asciiCode <= asciiEnd); }
+    inline bool isInBounds(uint32_t x, uint32_t y) const { return (x < width && y < height); };
+    uint32_t getByteIndex(uint8_t asciiCode) const { return (asciiCode - asciiStart) * bytesPerRow * height; }           // no bounds checking here, private helper function
+    uint32_t getByteIndex(uint32_t x, uint32_t y) const { return (((height - 1) - y) * bytesPerRow) + (x / 8); };        // no bounds checking here, private helper function
+    inline uint8_t getBitIndex(uint32_t x) const { return 7 - (x % 8); };                                                // no bounds checking here, private helper function
 };

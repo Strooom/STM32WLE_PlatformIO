@@ -8,6 +8,8 @@
 #include "graphics.h"
 #include "display.h"
 
+extern font couriernew12;
+
 void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
 
@@ -127,6 +129,23 @@ void test_drawBitMap() {
     }
 }
 
+void test_drawCharacter() {
+    display::clearAllPixels();
+    display::mirroring = displayMirroring::none;
+    display::rotation  = displayRotation::rotation0;
+    graphics::drawCharacter(8, 8, couriernew12, '_');
+    TEST_ASSERT_EQUAL(0xFE, display::displayBuffer[(25*8) + 1]);
+}
+
+void test_drawText() {
+    display::clearAllPixels();
+    display::mirroring  = displayMirroring::none;
+    display::rotation   = displayRotation::rotation0;
+    const char testText[] = "_";
+    graphics::drawText(8, 8, couriernew12, testText);
+    TEST_ASSERT_EQUAL(0xFE, display::displayBuffer[(25*8) + 1]);
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_drawPixel);
@@ -135,5 +154,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_drawRectangle);
     RUN_TEST(test_drawFilledRectangle);
     RUN_TEST(test_drawBitMap);
+    RUN_TEST(test_drawCharacter);
+    RUN_TEST(test_drawText);
     UNITY_END();
 }
