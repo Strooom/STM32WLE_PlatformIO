@@ -23,7 +23,7 @@ class graphics {
     static void drawRectangle(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theLineColor);
     static void drawFilledRectangle(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theFillColor);
 
-    static void drawLine(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theColor);
+    //static void drawLine(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theColor);
 
     static void drawBitMap(uint32_t xStart, uint32_t yStart, const bitmap& theBitmap);
     static void drawCharacter(uint32_t xStart, uint32_t yStart, const font& theFont, uint8_t theCharacter);

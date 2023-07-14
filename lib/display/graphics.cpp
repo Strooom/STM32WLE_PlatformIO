@@ -25,40 +25,40 @@ void graphics::drawVerticalLine(uint32_t x, uint32_t yStart, uint32_t yEnd, colo
     }
 }
 
-void graphics::drawLine(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theColor) {
-    // Catch vertical and horizontal lines and send them to the dedicated functions
-    if (xStart == xEnd) {
-        drawVerticalLine(xStart, yStart, yEnd, theColor);
-        return;
-    }
-    if (yStart == yEnd) {
-        drawHorizontalLine(xStart, xEnd, yStart, theColor);
-        return;
-    }
-    // Hello Bresenham, it's been 35 years since I first saw you ;-)
-    {
-        int32_t deltaX{xEnd - xStart};
-        int32_t deltaY{yEnd - yStart};
-        int32_t twiceDeltaY                 = 2 * deltaY;
-        int32_t twiceDeltaYMinusTwiceDeltaX = 2 * (deltaY - deltaX);
-        int32_t decisionMaker               = (2 * deltaY) - deltaX;
+// void graphics::drawLine(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theColor) {
+//     // Catch vertical and horizontal lines and send them to the dedicated functions
+//     if (xStart == xEnd) {
+//         drawVerticalLine(xStart, yStart, yEnd, theColor);
+//         return;
+//     }
+//     if (yStart == yEnd) {
+//         drawHorizontalLine(xStart, xEnd, yStart, theColor);
+//         return;
+//     }
+//     // Hello Bresenham, it's been 35 years since I first saw you ;-)
+//     {
+//         int32_t deltaX{xEnd - xStart};
+//         int32_t deltaY{yEnd - yStart};
+//         int32_t twiceDeltaY                 = 2 * deltaY;
+//         int32_t twiceDeltaYMinusTwiceDeltaX = 2 * (deltaY - deltaX);
+//         int32_t decisionMaker               = (2 * deltaY) - deltaX;
 
-        uint32_t buffer_x = xStart;
-        uint32_t buffer_y = yStart;
+//         uint32_t buffer_x = xStart;
+//         uint32_t buffer_y = yStart;
 
-        while (buffer_x != xEnd) {
-            drawPixel(buffer_x, buffer_y, theColor);
-            buffer_x++;
+//         while (buffer_x != xEnd) {
+//             drawPixel(buffer_x, buffer_y, theColor);
+//             buffer_x++;
 
-            if (decisionMaker < 0) {
-                decisionMaker += twiceDeltaY;
-            } else {
-                buffer_y++;
-                decisionMaker += twiceDeltaYMinusTwiceDeltaX;
-            }
-        }
-    }
-}
+//             if (decisionMaker < 0) {
+//                 decisionMaker += twiceDeltaY;
+//             } else {
+//                 buffer_y++;
+//                 decisionMaker += twiceDeltaYMinusTwiceDeltaX;
+//             }
+//         }
+//     }
+// }
 
 void graphics::drawRectangle(uint32_t xStart, uint32_t yStart, uint32_t xEnd, uint32_t yEnd, color theLineColor) {
     sort(xStart, xEnd);

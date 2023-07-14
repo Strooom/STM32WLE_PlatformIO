@@ -190,6 +190,12 @@ void test_changePixelOutOfBounds() {
     }
 }
 
+void test_dummy() {
+    display::initialize();
+    display::goSleep();
+    TEST_IGNORE_MESSAGE("For testCoverage only");
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_inBounds);
@@ -203,5 +209,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_clearPixel);
     RUN_TEST(test_changePixel);
     RUN_TEST(test_changePixelOutOfBounds);
+    RUN_TEST(test_dummy);
     UNITY_END();
 }

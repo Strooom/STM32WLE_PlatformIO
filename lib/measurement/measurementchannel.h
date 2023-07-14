@@ -7,20 +7,24 @@
 #pragma once
 #include <stdint.h>
 
-enum class measurementChannel : uint32_t {
+// Note : the values below need to match with the values expected by the payloadDecoder on the application server
+
+enum class measurementChannel : uint32_t
+{
     none = 0x00,
 
-    batteryChargeLevel                   = 0x01,
-    BME680SensorTemperature        = 0x10,
-    BME680SensorRelativeHumidity   = 0x11,
-    BME680SensorBarometricPressure = 0x12,
-    TSL25911VisibleLight           = 0x20,
-    TSL25911Infrared               = 0x21,
-    status                         = 0xE0,
-    events                         = 0xF0
+    batteryVoltage = 0x01,     // [mV]
+    batteryChargeLevel = 0x02, // [%] 0, 1-254, 255
+
+    BME680SensorTemperature = 0x10,        // [°C]
+    BME680SensorRelativeHumidity = 0x11,   // [%]
+    BME680SensorBarometricPressure = 0x12, // hPa (millibar)
+
+    TSL25911VisibleLight = 0x20, // lux
+    TSL25911Infrared = 0x21,     // lux
+
+    status = 0xE0,
+    events = 0xF0
 };
 
-const char* toString(measurementChannel aChannel);
-
-
-// °C
+const char *toString(measurementChannel aChannel);

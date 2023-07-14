@@ -12,6 +12,10 @@ const char* toString(measurementChannel type) {
             return "batteryChargeLevel";
             break;
 
+        case measurementChannel::batteryVoltage:
+            return "batteryChargeLevel";
+            break;
+
         case measurementChannel::BME680SensorTemperature:
             return "BME680 - Temperature";
             break;
