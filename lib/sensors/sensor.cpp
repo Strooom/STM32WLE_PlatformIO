@@ -8,17 +8,17 @@
 #include "battery.h"
 
 sensor::runResult sensor::run() {
-    if (active) {
-        uint32_t oversampling;
-        uint32_t prescaler;
-        if (power::hasUsbPower()) {
-            oversampling = oversamplingHighPower;
-            prescaler    = prescalerHighPower;
-        } else {
-            oversampling = oversamplingLowPower;
-            prescaler    = prescalerLowPower;
-        }
+    uint32_t oversampling;
+    uint32_t prescaler;
+    if (power::hasUsbPower()) {
+        oversampling = oversamplingHighPower;
+        prescaler    = prescalerHighPower;
+    } else {
+        oversampling = oversamplingLowPower;
+        prescaler    = prescalerLowPower;
+    }
 
+    if (prescaler > 0) {
         if (prescaleCounter > prescaler) {        // when switching between low power and high power mode, the prescaleCounter could need to be reset in the appropriate range
             prescaleCounter = prescaler;
         }
@@ -28,10 +28,10 @@ sensor::runResult sensor::run() {
 
         if (prescaleCounter == 0) {
             prescaleCounter              = prescaler;
-            lastSample                   = read();                      // take a new sample for this sensor and ...
-            samples[oversamplingCounter] = lastSample;                  // ... store it in the array of samples
+            lastValue                    = sample();                    // take a new sample for this sensor and ...
+            samples[oversamplingCounter] = lastValue;                   // ... store it in the array of samples
             if (oversamplingCounter == 0) {
-                lastMeasurement     = average(oversampling + 1);        // average all samples & output this measurement to NVS
+                lastValue           = average(oversampling + 1);        // average all samples & output this measurement to NVS
                 oversamplingCounter = oversampling;
                 return runResult::measured;
             } else {
@@ -48,37 +48,37 @@ sensor::runResult sensor::run() {
     }
 }
 
-float sensor::read() {
+float sensor::sample() {
     switch (type) {
-        case measurementChannel::batteryVoltage:
-        if (!battery::isAwake()) {
+        case sensorType::batteryVoltage:
+            if (!battery::isAwake()) {
                 battery::run();
             }
             return battery::getVoltage();
             break;
 
-        case measurementChannel::batteryChargeLevel:
-        if (!battery::isAwake()) {
+        case sensorType::batteryChargeLevel:
+            if (!battery::isAwake()) {
                 battery::run();
             }
             return battery::getChargeLevel();
             break;
 
-        case measurementChannel::BME680SensorTemperature:
+        case sensorType::BME680Temperature:
             if (!bme680::isAwake()) {
                 bme680::run();
             }
             return bme680::getTemperature();
             break;
 
-        case measurementChannel::BME680SensorRelativeHumidity:
+        case sensorType::BME680RelativeHumidity:
             if (!bme680::isAwake()) {
                 bme680::run();
             }
             return bme680::getRelativeHumidity();
             break;
 
-        case measurementChannel::BME680SensorBarometricPressure:
+        case sensorType::BME680BarometricPressure:
             if (!bme680::isAwake()) {
                 bme680::run();
             }
@@ -93,19 +93,19 @@ float sensor::read() {
 
 void sensor::goSleep() {
     switch (type) {
-        case measurementChannel::batteryVoltage:
+        case sensorType::batteryVoltage:
             break;
 
-        case measurementChannel::BME680SensorTemperature:
-        case measurementChannel::BME680SensorRelativeHumidity:
-        case measurementChannel::BME680SensorBarometricPressure:
+        case sensorType::BME680Temperature:
+        case sensorType::BME680RelativeHumidity:
+        case sensorType::BME680BarometricPressure:
             if (bme680::isAwake()) {
                 bme680::goSleep();
             }
             break;
 
-        case measurementChannel::TSL25911Infrared:
-        case measurementChannel::TSL25911VisibleLight:
+        case sensorType::TSL25911Infrared:
+        case sensorType::TSL25911VisibleLight:
             tsl2591::goSleep();
             break;
 
@@ -124,12 +124,12 @@ float sensor::average(uint32_t nmbrOfSamples) {
 
 void sensor::initalize() {
     switch (type) {
-        case measurementChannel::batteryVoltage:
+        case sensorType::batteryVoltage:
             break;
 
-        case measurementChannel::BME680SensorTemperature:
-        case measurementChannel::BME680SensorRelativeHumidity:
-        case measurementChannel::BME680SensorBarometricPressure:
+        case sensorType::BME680Temperature:
+        case sensorType::BME680RelativeHumidity:
+        case sensorType::BME680BarometricPressure:
             bme680::initialize();
             break;
 

@@ -6,3 +6,6 @@
 
 # Todo
 * test that the version inside the firmware is correct, for both local builds and cloud builds
+
+# some code to pick up the log of git since last version..
+# git log v1.1.7..HEAD --no-merges --pretty=format:%Cred%s%Creset%n%b

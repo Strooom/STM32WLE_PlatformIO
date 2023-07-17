@@ -4,35 +4,35 @@
 // ### License : CC 4.0 BY-NC-SA - https://creativecommons.org/licenses/by-nc-sa/4.0/ ###
 // ######################################################################################
 
-#include "measurementchannel.h"
+#include "sensortype.h"
 
-const char* toString(measurementChannel type) {
+const char* toString(sensorType type) {
     switch (type) {
-        case measurementChannel::batteryChargeLevel:
+        case sensorType::batteryChargeLevel:
             return "batteryChargeLevel";
             break;
 
-        case measurementChannel::batteryVoltage:
+        case sensorType::batteryVoltage:
             return "batteryChargeLevel";
             break;
 
-        case measurementChannel::BME680SensorTemperature:
+        case sensorType::BME680Temperature:
             return "BME680 - Temperature";
             break;
 
-        case measurementChannel::BME680SensorRelativeHumidity:
+        case sensorType::BME680RelativeHumidity:
             return "BME680 - Relative Humidity";
             break;
 
-        case measurementChannel::BME680SensorBarometricPressure:
+        case sensorType::BME680BarometricPressure:
             return "BME680 - Barometer";
             break;
 
-        case measurementChannel::TSL25911VisibleLight:
+        case sensorType::TSL25911VisibleLight:
             return "TSL25911 - Visible Light";
             break;
 
-        case measurementChannel::TSL25911Infrared:
+        case sensorType::TSL25911Infrared:
             return "TSL25911 - Infrared Light";
             break;
 

@@ -21,11 +21,11 @@ sensorCollection::runResult sensorCollection::run() {
                 logging::snprintf(logging::source::sensorEvents, "Sensor %s : prescale tick\n", toString(theSensorCollection[sensorIndex].type));
                 break;
             case sensor::runResult::sampled:
-                logging::snprintf(logging::source::sensorEvents, "Sensor %s : sampled %.2f\n", toString(theSensorCollection[sensorIndex].type), theSensorCollection[sensorIndex].lastSample);
+                logging::snprintf(logging::source::sensorEvents, "Sensor %s : sampled %.2f\n", toString(theSensorCollection[sensorIndex].type), theSensorCollection[sensorIndex].lastValue);
                 break;
             case sensor::runResult::measured:
-                logging::snprintf(logging::source::sensorEvents, "Sensor %s : measurement %.4f\n", toString(theSensorCollection[sensorIndex].type), theSensorCollection[sensorIndex].lastMeasurement);
-                addMeasurement(theSensorCollection[sensorIndex].type, theSensorCollection[sensorIndex].lastMeasurement);
+                logging::snprintf(logging::source::sensorEvents, "Sensor %s : measurement %.4f\n", toString(theSensorCollection[sensorIndex].type), theSensorCollection[sensorIndex].lastValue);
+                addMeasurement(theSensorCollection[sensorIndex].type, theSensorCollection[sensorIndex].lastValue);
                 break;
         }
     }
@@ -43,27 +43,27 @@ sensorCollection::runResult sensorCollection::run() {
 }
 
 void sensorCollection::discover() {
-    // addSensor(measurementChannel::batteryVoltage, 7, 359, 7, 14);        // one measurement per day on battery, one per hour on USB power
-    // addSensor(measurementChannel::batteryVoltage, 0, 3, 0, 3);        // test Version
-    addSensor(measurementChannel::batteryVoltage, 3, 59, 3, 4);        // test Version
+    // addSensor(sensorType::batteryVoltage, 7, 359, 7, 14);        // one measurement per day on battery, one per hour on USB power
+    // addSensor(sensorType::batteryVoltage, 0, 3, 0, 3);        // test Version
+    addSensor(sensorType::batteryVoltage, 3, 59, 3, 4);        // test Version
 
     if (bme680::isPresent()) {
         bme680::initialize();        // this reads the calibration data from the sensor
-        // addSensor(measurementChannel::BME680SensorTemperature, 3, 14, 3, 14);               // one measurement per 30 minutes
-        // addSensor(measurementChannel::BME680SensorRelativeHumidity, 3, 29, 3, 29);          // one measurement per 60 minutes
-        // addSensor(measurementChannel::BME680SensorBarometricPressure, 3, 59, 3, 59);        // one measurement per 120 minutes
-        addSensor(measurementChannel::BME680SensorTemperature, 3, 59, 3, 4);               // test
-        addSensor(measurementChannel::BME680SensorRelativeHumidity, 3, 59, 3, 4);          // test
-        addSensor(measurementChannel::BME680SensorBarometricPressure, 3, 59, 3, 4);        // test
+        // addSensor(sensorType::BME680Temperature, 3, 14, 3, 14);               // one measurement per 30 minutes
+        // addSensor(sensorType::BME680RelativeHumidity, 3, 29, 3, 29);          // one measurement per 60 minutes
+        // addSensor(sensorType::BME680BarometricPressure, 3, 59, 3, 59);        // one measurement per 120 minutes
+        addSensor(sensorType::BME680Temperature, 3, 59, 3, 4);               // test
+        addSensor(sensorType::BME680RelativeHumidity, 3, 59, 3, 4);          // test
+        addSensor(sensorType::BME680BarometricPressure, 3, 59, 3, 4);        // test
     }
 
     // if (tsl2591::isPresent()) {
-    //     //        addSensor(measurementChannel::TSL25911VisibleLight, 3, 9, 3, 9);        //
-    //     //        addSensor(measurementChannel::TSL25911Infrared, 3, 9, 3, 9);            //
+    //     //        addSensor(sensorType::TSL25911VisibleLight, 3, 9, 3, 9);        //
+    //     //        addSensor(sensorType::TSL25911Infrared, 3, 9, 3, 9);            //
     // }
 }
 
-void sensorCollection::addSensor(measurementChannel aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower) {
+void sensorCollection::addSensor(sensorType aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower) {
     if (actualNumberOfSensors < maxNumberOfSensors) {
         if (oversamplingLowPower > sensor::maxOversampling) {
             oversamplingLowPower = sensor::maxOversampling;
@@ -85,14 +85,13 @@ void sensorCollection::addSensor(measurementChannel aType, uint32_t oversampling
 
         theSensorCollection[actualNumberOfSensors].oversamplingCounter = sensor::maxOversampling;        // will be reduced to either oversamplingLowPower or oversamplingHighPower on the first run. If it would be initialized to 0, it would output a measurement on first run without having done all the samples
 
-        theSensorCollection[actualNumberOfSensors].active = true;
         actualNumberOfSensors++;
     } else {
         // TODO : log the error
     }
 }
 
-void sensorCollection::addMeasurement(measurementChannel aType, float aValue) {
+void sensorCollection::addMeasurement(sensorType aType, float aValue) {
     if (actualNumberOfMeasurements < maxNumberOfSensors) {
         latestMeasurements[actualNumberOfMeasurements].timestamp.asDoubleWord = measurement::getTimeStamp();
         latestMeasurements[actualNumberOfMeasurements].type                   = aType;

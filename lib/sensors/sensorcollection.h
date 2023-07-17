@@ -30,6 +30,6 @@ class sensorCollection {
     sensor theSensorCollection[maxNumberOfSensors];
 
 
-    void addSensor(measurementChannel aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower);
-    void addMeasurement(measurementChannel aType, float aValue);
+    void addSensor(sensorType aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower);
+    void addMeasurement(sensorType aType, float aValue);
 };

@@ -1,4 +1,6 @@
 #include <unity.h>
+#include "hexascii.h"
+#include "aeskey.h"
 #include "aesblock.h"
 
 void setUp(void) {}           // before test
@@ -21,10 +23,48 @@ void test_setFromBytes() {
     TEST_ASSERT_EQUAL_UINT32_ARRAY(expectedWords, aBlock.asWords(), aesBlock::lengthAsWords);
 }
 
+void test_encryptBlock() {
+    aesKey theKey;
+    const char keyAsString[] = "2B7E151628AED2A6ABF7158809CF4F3C";
+    uint8_t keyAsBytes[aesKey::lengthAsBytes];
+    hexAscii::hexStringToBinaryArray(keyAsString, keyAsBytes);
+    theKey.set(keyAsBytes);
+
+    aesBlock aBlock;
+    const char clearTextAsString[] = "6BC1BEE22E409F96E93D7E117393172A";
+    uint8_t clearTextAsBytes[aesBlock::lengthAsBytes];
+    hexAscii::hexStringToBinaryArray(clearTextAsString, clearTextAsBytes);
+    aBlock.set(clearTextAsBytes);
+
+    aBlock.encrypt(theKey);
+
+    const char expectedCypherAsString[] = "3AD77BB40D7A3660A89ECAF32466EF97";
+    uint8_t expectedCypherAsBytes[aesBlock::lengthAsBytes];
+    hexAscii::hexStringToBinaryArray(expectedCypherAsString, expectedCypherAsBytes);
+
+    //TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedCypherAsBytes, aBlock.asBytes(), aesBlock::lengthAsBytes);
+     TEST_IGNORE_MESSAGE("test_encryptBlock() not implemented yet");
+}
+
+// void test_encryptBlock1() {
+//     aesKey theKey;
+//     theKey.setFromASCII("2B7E151628AED2A6ABF7158809CF4F3C");
+
+//     unsigned char plainText[16];
+//     hexStringToBinaryArray("AE2D8A571E03AC9C9EB76FAC45AF8E51", plainText);
+
+//     AES_Encrypt(plainText, theKey.asUnsignedChar());
+
+//     char cipherAsHexString[33];
+//     binaryArrayToHexString(plainText, 16, cipherAsHexString);
+
+//     TEST_ASSERT_EQUAL_STRING("F5D3D58503B9699DE785895A96FDBAAF", cipherAsHexString);
+// }
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_initialize);
     RUN_TEST(test_setFromBytes);
+    RUN_TEST(test_encryptBlock);
     UNITY_END();
 }

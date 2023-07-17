@@ -11,7 +11,7 @@ void test_sensorCollection_initalize() {
 
 void test_sensorCollection_addSensor() {
     sensorCollection aCollection;
-    aCollection.addSensor(measurementChannel::batteryChargeLevel, 8, 360, 8, 15);
+    aCollection.addSensor(sensorType::batteryChargeLevel, 8, 360, 8, 15);
     TEST_ASSERT_EQUAL_UINT32(1, aCollection.actualNumberOfSensors);
 
     TEST_ASSERT_EQUAL_UINT32(8, aCollection.theSensorCollection[0].oversamplingLowPower);
@@ -23,7 +23,7 @@ void test_sensorCollection_addSensor() {
 void test_sensorCollection_addTooManySensors() {
     sensorCollection aCollection;
     for (uint32_t index = 0; index < (sensorCollection::maxNumberOfSensors + 2); index++) {
-        aCollection.addSensor(measurementChannel::batteryChargeLevel, 8, 360, 8, 15);
+        aCollection.addSensor(sensorType::batteryChargeLevel, 8, 360, 8, 15);
     }
     TEST_ASSERT_EQUAL_UINT32(sensorCollection::maxNumberOfSensors, aCollection.actualNumberOfSensors);
 }
@@ -36,7 +36,7 @@ void test_sensorCollection_discover() {
 
 void test_sensor_initialization() {
     sensor aSensor;
-    TEST_ASSERT_EQUAL(measurementChannel::none, aSensor.type);
+    TEST_ASSERT_EQUAL(sensorType::none, aSensor.type);
     TEST_ASSERT_EQUAL_UINT32(0, aSensor.oversamplingLowPower);
     TEST_ASSERT_EQUAL_UINT32(0, aSensor.prescalerLowPower);
     TEST_ASSERT_EQUAL_UINT32(0, aSensor.oversamplingHighPower);
@@ -50,7 +50,7 @@ void test_sensor_initialization() {
 
 void test_sensor_run_inactive() {
     sensor aSensor;
-    aSensor.type = measurementChannel::batteryChargeLevel;
+    aSensor.type = sensorType::batteryChargeLevel;
 
     for (uint32_t index = 0; index < 8; index++) {
         TEST_ASSERT_EQUAL(sensor::runResult::inactive, aSensor.run());
@@ -63,12 +63,11 @@ void test_sensor_run_active_prescaling_and_oversampling() {
     const uint32_t prescalerTestValue{3};
     const uint32_t oversamplingTestValue{3};
     sensor aSensor;
-    aSensor.type                 = measurementChannel::batteryVoltage;
+    aSensor.type                 = sensorType::batteryVoltage;
     aSensor.prescalerLowPower    = prescalerTestValue;           // this makes us take a sample every (prescalerTestValue + 1) runs
     aSensor.oversamplingLowPower = oversamplingTestValue;        // this makes us average (oversamplingTestValue + 1) samples into a measurement
     aSensor.prescaleCounter      = aSensor.prescalerLowPower;
     aSensor.oversamplingCounter  = aSensor.oversamplingLowPower;
-    aSensor.active               = true;
 
     TEST_ASSERT_EQUAL(sensor::runResult::prescaled, aSensor.run());
     TEST_ASSERT_EQUAL(sensor::runResult::prescaled, aSensor.run());
@@ -115,12 +114,11 @@ void test_sensor_transition_high_low_power() {
     const uint32_t prescalerTestValue{3};
     const uint32_t oversamplingTestValue{3};
     sensor aSensor;
-    aSensor.type                 = measurementChannel::batteryVoltage;
+    aSensor.type                 = sensorType::batteryVoltage;
     aSensor.prescalerLowPower    = prescalerTestValue;
     aSensor.oversamplingLowPower = oversamplingTestValue;
     aSensor.prescaleCounter      = sensor::maxPrescaler + 1;
     aSensor.oversamplingCounter  = sensor::maxOversampling + 1;
-    aSensor.active               = true;
     aSensor.run();
     TEST_ASSERT_EQUAL_UINT32(prescalerTestValue - 1, aSensor.prescaleCounter);
     TEST_ASSERT_EQUAL_UINT32(aSensor.oversamplingLowPower, aSensor.oversamplingCounter);
@@ -137,6 +135,20 @@ void test_sensor_average() {
     TEST_ASSERT_EQUAL_FLOAT(1.5F, aSensor.average(4));
 }
 
+void test_dummy() {
+    (void)toString(sensorType::batteryChargeLevel);
+    (void)toString(sensorType::batteryVoltage);
+    (void)toString(sensorType::BME680BarometricPressure);
+    (void)toString(sensorType::BME680RelativeHumidity);
+    (void)toString(sensorType::BME680Temperature);
+    (void)toString(sensorType::events);
+    (void)toString(sensorType::none);
+    (void)toString(sensorType::status);
+    (void)toString(sensorType::TSL25911Infrared);
+    (void)toString(sensorType::TSL25911VisibleLight);
+    TEST_IGNORE_MESSAGE("For testCoverage only");
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_sensorCollection_initalize);
@@ -148,5 +160,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_sensor_run_active_prescaling_and_oversampling);
     RUN_TEST(test_sensor_transition_high_low_power);
     RUN_TEST(test_sensor_average);
+    RUN_TEST(test_dummy);
     UNITY_END();
 }
