@@ -6,17 +6,26 @@
 
 #pragma once
 #include <stdint.h>
-
-// Represents an AMS TSL2591 sensor
+#include "sensorchannel.h"
+#include "sensortype.h"
+#include "sensorstate.h"
 
 class tsl2591 {
   public:
-    static bool isPresent();                 // detect if there is an TSL2591 on the I2C bus
-    static void initialize();                //
-    static float readVisibleLight();         //
-    static float readInfraredLight();        //
-    static bool goSleep();                   //
+    static bool isPresent();         // detect if there is an TSL2591 on the I2C bus
+    static void initialize();        //
+    static void sample();
 
+    static float getVisibleLight();         //
+    static float getInfraredLight();        //
+
+    static bool goSleep();                  //
+
+#ifndef unitTesting
+
+  private:
+#endif
+    static sensorState state;
     static constexpr uint8_t i2cAddress{0x29};        // default I2C address for this sensor
     static constexpr uint8_t halTrials{0x03};         // ST HAL requires a 'retry' parameters
     static constexpr uint8_t halTimeout{0x10};        // ST HAL requires a 'timeout' in ms
@@ -74,7 +83,9 @@ class tsl2591 {
     static float ch1Coefficient;
     static float ch2Coefficient;
 
-  private:
+    static uint32_t rawChannel0;
+    static uint32_t rawChannel1;
+
     static bool testI2cAddress(uint8_t addressToTest);                          //
     static uint8_t readRegister(registers aRegister);                           //
     static void writeRegister(registers aRegister, const uint8_t value);        //
@@ -84,6 +95,6 @@ class tsl2591 {
     static void increaseSensitivity();                                          //
     static void decreaseSensitivity();                                          //
 
-    static integrationTimes integrationTime;        // current integration time
+    static integrationTimes integrationTime;                                    // current integration time
     static gains gain;
 };

@@ -10,12 +10,16 @@
 #include "main.h"
 extern I2C_HandleTypeDef hi2c2;
 #else
+extern uint8_t mockRegisters[256];
 #include <cstring>
-uint8_t mockRegisters[256]{};
+
 #endif
 
-// Definition of NON-CONST STATIC variables
-bool bme680::awake{false};
+sensorChannel bme680::channels[nmbrChannels]{
+    {sensorChannelType::BME680Temperature, 0, 0, 0, 0},
+    {sensorChannelType::BME680RelativeHumidity, 0, 0, 0, 0},
+    {sensorChannelType::BME680BarometricPressure, 0, 0, 0, 0},
+};
 
 sensorState bme680::state{sensorState::boot};
 
@@ -159,10 +163,6 @@ float bme680::getBarometricPressure() {
 void bme680::goSleep() {
     state = sensorState::sleeping;
 }
-
-// void bme680::reset() {
-//     writeRegister(bme680::registers::reset, static_cast<uint8_t>(bme680::commands::softReset));
-// }
 
 bool bme680::testI2cAddress(uint8_t addressToTest) {
 #ifndef environment_desktop

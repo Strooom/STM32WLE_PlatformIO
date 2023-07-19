@@ -10,11 +10,10 @@ batteryType battery::type{batteryType::liFePO4_700mAh};
 float battery::batteryVoltage{0.0F};
 float battery::batteryChargeLevel{0.0F};
 
-    sensorChannel battery::channels[nmbrChannels]{
-        {sensorChannelType::batteryVoltage, 0, 0, 0, 0},
-        {sensorChannelType::batteryChargeLevel, 0, 0, 0, 0},
-    };
-
+sensorChannel battery::channels[nmbrChannels]{
+    {sensorChannelType::batteryVoltage, 0, 0, 0, 0},
+    {sensorChannelType::batteryChargeLevel, 0, 0, 0, 0},
+};
 
 const interpolationPoint battery::voltageVsCharge[nmbrBatteryTypes][nmbrInterpolationPoints] = {
     {
@@ -139,5 +138,3 @@ uint8_t battery::calculateChargeLevel(float voltage) {
     }
     return 0;
 }
-
-

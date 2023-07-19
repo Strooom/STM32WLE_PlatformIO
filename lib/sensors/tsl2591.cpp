@@ -7,9 +7,20 @@
 #include "tsl2591.h"
 #include "logging.h"
 
-// Definition of NON-CONST STATIC variables
+#ifndef environment_desktop
+#include "main.h"
+extern I2C_HandleTypeDef hi2c2;
+#else
+#include <cstring>
+extern uint8_t mockRegisters[256];
+#endif
+
 tsl2591::integrationTimes tsl2591::integrationTime{integrationTimes::integrationTime100ms};
 tsl2591::gains tsl2591::gain{gains::gain1x};
+sensorState tsl2591::state{sensorState::boot};
+
+uint32_t tsl2591::rawChannel0{0};
+uint32_t tsl2591::rawChannel1{0};
 
 float tsl2591::luxCoefficient{408.0F};
 float tsl2591::ch0Coefficient{1.64F};
@@ -30,6 +41,8 @@ void tsl2591::initialize() {
     writeRegister(registers::enable, powerOn);
     setIntegrationTime(integrationTimes::integrationTime100ms);
     setGain(gains::gain428x);
+
+    state = sensorState::idle;
 }
 
 bool tsl2591::goSleep() {
@@ -37,7 +50,7 @@ bool tsl2591::goSleep() {
     return false;
 }
 
-float tsl2591::readVisibleLight() {
+void tsl2591::sample() {
     // 1. Enable the sensor
     writeRegister(registers::enable, 0x03);
 
@@ -50,16 +63,14 @@ float tsl2591::readVisibleLight() {
     uint32_t raw3 = readRegister(registers::c1datah);
     uint32_t raw4 = readRegister(registers::c1datal);
 
-    uint32_t rawch0 = (raw1 << 8) + raw2;
-    uint32_t rawch1 = (raw3 << 8) + raw4;
+    rawChannel0 = (raw1 << 8) + raw2;
+    rawChannel1 = (raw3 << 8) + raw4;
 
-    // logging::snprintf("S ch0 [%u], ch1 [%u]\n", rawch0, rawch1);
-
-    if ((rawch0 == 0xFFFF) || (rawch1 == 0xFFFF)) {
+    if ((rawChannel0 == 0xFFFF) || (rawChannel1 == 0xFFFF)) {
         decreaseSensitivity();
     }
 
-    if ((rawch0 < 0x3333) || (rawch1 < 0x3333)) {
+    if ((rawChannel0 < 0x3333) || (rawChannel1 < 0x3333)) {
         increaseSensitivity();
     }
 
@@ -85,8 +96,7 @@ float tsl2591::readVisibleLight() {
     }
 
     float totalFactor = (integrationTimeFactor * gainFactor) / luxCoefficient;
-    float lux         = (((float)rawch0 - (float)rawch1)) * (1.0F - ((float)rawch1 / (float)rawch0)) / totalFactor;
-    return lux;
+    float lux         = (((float)rawChannel0 - (float)rawChannel1)) * (1.0F - ((float)rawChannel1 / (float)rawChannel0)) / totalFactor;
 }
 
 void tsl2591::setIntegrationTime(integrationTimes theIntegrationTime) {
@@ -112,46 +122,31 @@ void tsl2591::decreaseSensitivity() {
     // When the ADC reading overflow, we first reduce integration time, then gain
 }
 
+bool tsl2591::testI2cAddress(uint8_t addressToTest) {
 #ifndef environment_desktop
-
-#include "main.h"
-
-extern I2C_HandleTypeDef hi2c2;
-
-bool tsl2591::testI2cAddress(uint8_t addressToTest) {
     return (HAL_OK == HAL_I2C_IsDeviceReady(&hi2c2, addressToTest << 1, halTrials, halTimeout));
-}
-
-uint8_t tsl2591::readRegister(registers registerAddress) {
-    uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
-    uint8_t result[1]{0};
-    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, result, 1, halTimeout);
-    return result[0];
-}
-
-void tsl2591::writeRegister(registers registerAddress, uint8_t value) {
-    uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
-    HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
-}
-
 #else
-
-bool tsl2591::testI2cAddress(uint8_t addressToTest) {
-    return false;
+    return true;
+#endif
 }
 
 uint8_t tsl2591::readRegister(registers registerAddress) {
-    switch (registerAddress) {
-        case registers::id:
-            return tsl2591::chipIdValue;
-            break;
-        default:
-            return 0;
-            break;
-    }
+    uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
+    uint8_t result;
+
+#ifndef environment_desktop
+    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &result, 1, halTimeout);
+#else
+    result                                               = mockRegisters[static_cast<uint8_t>(registerAddress)];
+#endif
+    return result;
 }
 
 void tsl2591::writeRegister(registers registerAddress, uint8_t value) {
-}
-
+    uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
+#ifndef environment_desktop
+    HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
+#else
+    mockRegisters[static_cast<uint8_t>(registerAddress)] = value;
 #endif
+}

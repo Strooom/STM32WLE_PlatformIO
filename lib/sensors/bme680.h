@@ -10,30 +10,26 @@
 #include "sensortype.h"
 #include "sensorstate.h"
 
-// Represents a Bosch BME680 sensorChannel
-
 class bme680 {
   public:
     static bool isPresent();
     static void initialize();
     static void sample();
 
-    // static bool isAwake();                       // check if sampling already done
+    static float getTemperature();
+    static float getRelativeHumidity();
+    static float getBarometricPressure();
 
-    // static void run();                           // wakeUp and do the sampling
-    static float getTemperature();               //
-    static float getRelativeHumidity();          //
-    static float getBarometricPressure();        //
+    static void goSleep();
 
-    static void goSleep();                       //
+    static constexpr uint32_t nmbrChannels{3};
+    static sensorChannel channels[nmbrChannels];
 
 #ifndef unitTesting
 
   private:
 #endif
-
     static sensorState state;
-
     static constexpr uint8_t i2cAddress{0x76};        // default I2C address for this sensorChannel, DSO tied to GND on our hardware
     static constexpr uint8_t halTrials{0x03};         // ST HAL requires a 'retry' parameters
     static constexpr uint8_t halTimeout{0x10};        // ST HAL requires a 'timeout' in ms
@@ -76,9 +72,8 @@ class bme680 {
     };
 
     // Other
-    static constexpr uint8_t chipIdValue{0x61};        // value to expect at the chipIdregister, this allows to discover/recognize the BME68x
+    static constexpr uint8_t chipIdValue{0x61};                                                     // value to expect at the chipIdregister, this allows to discover/recognize the BME68x
 
-    static void reset();                                                                            // soft-reset
     static bool testI2cAddress(uint8_t addressToTest);                                              //
     static uint8_t readRegister(registers aRegister);                                               // read a single register
     static void readRegisters(uint16_t startAddress, uint16_t length, uint8_t* destination);        // read a range of registers into a buffer
