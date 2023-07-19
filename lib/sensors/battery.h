@@ -7,33 +7,45 @@
 #pragma once
 #include <stdint.h>
 #include "batterytype.h"
+#include "sensortype.h"
+#include "sensorchannel.h"
 
-struct interpolationPoint
-{
-  float voltage;  // [mV]
-  uint8_t charge; // [%, 0-255]
+struct interpolationPoint {
+    float voltage;         // [mV]
+    uint8_t charge;        // [%, 0-255]
 };
 
 constexpr uint32_t nmbrInterpolationPoints{8};
 
-class battery
-{
-public:
-  // static bool isPresent(); // true : when no USBPower (and code still executing) it means we do have a battery.
-  // false : we don't know if there is a battery or not, as external USB power is present and masking the battery voltage.
-  static void run();
+class battery {
+  public:
+    static bool isPresent() { return true; };
+    static void initalize();        // initial config of the ADC
+    static void sample();           // read ADC, translate into mV and SoC
 
-  static bool isAwake();
-  static float getVoltage();
-  static uint8_t getChargeLevel();
+    static float getVoltage();
+    static float getChargeLevel();
 
-  static batteryType type; // TODO : we need to read this from nvs
-  
+    static void goSleep(){};        // ADC is auto-power-down, so nothing needed here
+
+    static constexpr uint32_t nmbrChannels{2};
+    static sensorChannel channels[nmbrChannels];
+
 #ifndef unitTesting
 
   private:
 #endif
-  static bool checkVoltageVsCharge(uint32_t batteryTypeIndex); // this checks that the voltage/charge curve is monotone, ie that the voltage is always increasing when the charge is increasing
-  static const interpolationPoint voltageVsCharge[nmbrBatteryTypes][nmbrInterpolationPoints];
-  static uint8_t calculateCharge(float voltage);
+    // ### sensorDevice registers ###
+    // ### sensorDevice commands ###
+    // ### sensorDevice properties  / magic values ###
+    static float batteryVoltage;
+    static float batteryChargeLevel;
+
+    // ### sensorDevice internal methods / helper functions ###
+
+    static batteryType type;        // TODO : we need to read this from nvs
+    static const interpolationPoint voltageVsCharge[nmbrBatteryTypes][nmbrInterpolationPoints];
+
+    static bool checkVoltageVsCharge(uint32_t batteryTypeIndex);        // this checks that the voltage/charge curve is monotone, ie that the voltage is always increasing when the charge is increasing
+    static uint8_t calculateChargeLevel(float voltage);
 };

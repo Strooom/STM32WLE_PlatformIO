@@ -9,9 +9,8 @@
 
 class nonVolatileStorage {
   public:
-    static bool isReady();              // testing if the EEPROM is found correctly on the I2C bus
-    static bool isInitialized();        // testing if the EEPROM is initialized or still has factory reset values of 0xFF
-
+    static bool isPresent();              // testing if the EEPROM is found correctly on the I2C bus
+    
     static constexpr uint32_t size{64 * 1024};
     static constexpr uint8_t i2cAddress{0x50};         // default I2C address of the first EEPROM, the second one has an address i2cAddress+1, set by its A0 pin being ties to VDD
     static constexpr uint8_t halTrials{0x03};          // ST HAL requires a 'retry' parameters

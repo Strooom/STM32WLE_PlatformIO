@@ -6,30 +6,31 @@
 
 #pragma once
 #include <stdint.h>
-#include "sensor.h"
+#include "sensortype.h"
+#include "sensorchannel.h"
 #include "measurement.h"
 
-class sensorCollection {
+class sensorChannelCollection {
   public:
-    void discover();        // this will scan all hardware ports (I2C, UART, ...) for known sensors, and if found add them to the collection
-    enum class runResult : uint32_t {
-        none,
-        newMeasurements,
-    };
-    runResult run();        // this will check all sensors in the collection if they need to be sampled, and will measurement them if needed. Sample is stored in measurement collection
+    static void discover();        // this will scan all hardware ports (I2C, UART, ...) for known sensors, and if found add their sensorChannels to the collection
 
-    static constexpr uint32_t maxNumberOfSensors{8};
-    measurement latestMeasurements[maxNumberOfSensors];        // collects the measurements of all sensors during a run
-    uint32_t actualNumberOfMeasurements{0};                    // counts the number of measurements in the latestMeasurements array
+    // enum class runResult : uint32_t {
+    //     none,
+    //     newMeasurements,
+    // };
+    // static runResult run();        // this will check all sensors in the collection if they need to be sampled, and will measurement them if needed. Sample is stored in measurement collection
+
+    static constexpr uint32_t maxNumberOfChannels{8};
+//    static measurement latestMeasurements[maxNumberOfChannels];        // collects the measurements of all sensors during a run
+//    static uint32_t actualNumberOfMeasurements;
 
 #ifndef unitTesting
 
   private:
 #endif
-    uint32_t actualNumberOfSensors{0};
-    sensor theSensorCollection[maxNumberOfSensors];
+    static uint32_t actualNumberOfChannels;
+    static sensorChannel theSensorChannelCollection[maxNumberOfChannels];
 
-
-    void addSensor(sensorType aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower);
-    void addMeasurement(sensorType aType, float aValue);
+    static void add(sensorChannelType aType, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower);
+//    static void addMeasurement(sensorType aType, float aValue);
 };

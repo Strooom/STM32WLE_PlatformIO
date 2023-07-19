@@ -10,7 +10,7 @@
 
 class measurement {
   public:
-    sensorType type;                  // defines what data the measurement contains, eg temperature, humidity, pressure, etc
+    sensorChannelType type;                  // defines what data the measurement contains, eg temperature, humidity, pressure, etc
     union {
         uint32_t asDoubleWord;        // using UNIX time : seconds elapsed since 1970 Jan 01 00:00:00 UTC
         uint8_t asBytes[4];           //

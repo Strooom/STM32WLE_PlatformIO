@@ -6,9 +6,9 @@
 
 #pragma once
 #include <stdint.h>
-//#include "sensor.h"
+//#include "sensorChannel.h"
 
-// Represents a Bosch BME680 sensor
+// Represents a Bosch BME680 sensorChannel
 
 class bme680 {
   public:
@@ -21,7 +21,7 @@ class bme680 {
     static float getBarometricPressure();        //
     static void goSleep();                       //
 
-    static constexpr uint8_t i2cAddress{0x76};        // default I2C address for this sensor, DSO tied to GND on our hardware
+    static constexpr uint8_t i2cAddress{0x76};        // default I2C address for this sensorChannel, DSO tied to GND on our hardware
     static constexpr uint8_t halTrials{0x03};         // ST HAL requires a 'retry' parameters
     static constexpr uint8_t halTimeout{0x10};        // ST HAL requires a 'timeout' in ms
 

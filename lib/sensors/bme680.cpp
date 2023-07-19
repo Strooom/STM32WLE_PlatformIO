@@ -44,7 +44,7 @@ bool bme680::isAwake() {
 
 void bme680::initialize() {
     uint8_t registerData[42]{};
-    readRegisters(0x8A, 23, registerData);             // read all calibration data from the sensor and convert to proper coefficients
+    readRegisters(0x8A, 23, registerData);             // read all calibration data from the sensorChannel and convert to proper coefficients
     readRegisters(0xE1, 14, registerData + 23);        //
     readRegisters(0x00, 5, registerData + 37);         //
 

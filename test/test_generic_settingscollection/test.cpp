@@ -43,7 +43,6 @@ void test_write_read_setting() {
 
 void test_is_initialized() {
     nonVolatileStorage::erase();
-    TEST_ASSERT_TRUE(nonVolatileStorage::isReady());        // when running on a PC, this calls a testdyummy function that always returns true - for coverage only
     TEST_ASSERT_FALSE(settingsCollection::isInitialized());
     settingsCollection::save<uint8_t>(settingsCollection::settingIndex::nvsMapVersion, 0x01);
     TEST_ASSERT_TRUE(settingsCollection::isInitialized());

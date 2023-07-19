@@ -32,7 +32,7 @@ void nonVolatileStorage::fill(uint8_t value) {
 
 extern I2C_HandleTypeDef hi2c2;
 
-bool nonVolatileStorage::isReady() {
+bool nonVolatileStorage::isPresent() {
     if (HAL_OK != HAL_I2C_IsDeviceReady(&hi2c2, i2cAddress << 1, halTrials, halTimeout)) {        // testing presence of the first bank of 64K (U7)
         return false;
     }
@@ -45,6 +45,7 @@ bool nonVolatileStorage::isReady() {
 void nonVolatileStorage::read(uint32_t startAddress, uint8_t* data, uint32_t dataLength) {
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_16BIT, data, dataLength, halTimeout);        //
 }
+
 void nonVolatileStorage::write(uint32_t startAddress, uint8_t* data, uint32_t dataLength) {
     HAL_GPIO_WritePin(GPIOB, writeProtect_Pin, GPIO_PIN_RESET);        // Drive writeProtect LOW = enable write
     HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_16BIT, data, dataLength, halTimeout);
@@ -60,7 +61,7 @@ void nonVolatileStorage::write(uint32_t startAddress, uint8_t* data, uint32_t da
 
 static uint8_t memory[nonVolatileStorage::size];        // array emulating the EEPROM for uintTesting
 
-bool nonVolatileStorage::isReady() {
+bool nonVolatileStorage::isPresent() {
     return true;
 }
 

@@ -34,8 +34,10 @@ bool power::isUsbRemoved() {
 
 #else
 
+bool power::mockUsbPower{false};
+
 bool power::hasUsbPower() {
-    return false;
+    return mockUsbPower;
 }
 
 bool power::isUsbConnected() {

@@ -32,7 +32,7 @@ void measurementCollection::read(uint32_t measurementIndex, measurement& destina
     destination.value.asBytes[1]     = rawData[5];
     destination.value.asBytes[2]     = rawData[6];
     destination.value.asBytes[3]     = rawData[7];
-    destination.type                 = static_cast<sensorType>(rawData[8]);
+    destination.type                 = static_cast<sensorChannelType>(rawData[8]);
     destination.flags                = rawData[9];
 }
 

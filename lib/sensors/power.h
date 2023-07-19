@@ -13,6 +13,12 @@ class power {
     static bool isUsbRemoved();          // detect removal of USB cable event
     static bool hasUsbPower();
 
+#ifndef unitTesting
+
   private:
+#endif
     static bool usbPower;        // remembers previous usbPresent state
+#ifdef environment_desktop
+    static bool mockUsbPower;        // this is only there during unit testing on desktop
+#endif
 };

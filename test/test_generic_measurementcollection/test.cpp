@@ -1,5 +1,6 @@
 #include <unity.h>
 #include "measurementcollection.h"
+#include "sensortype.h"
 
 void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
@@ -16,7 +17,7 @@ void test_save_Read_measurement() {
     measurement dataIn;
     dataIn.timestamp.asDoubleWord = 0x12345678;
     dataIn.value.asDoubleWord     = 0xAA55FF00;
-    dataIn.type                   = sensorType::batteryVoltage;
+    dataIn.type                   = sensorChannelType::batteryVoltage;
     dataIn.flags                  = 0xC2;
     measurementCollection::write(0, dataIn);
     measurement dataOut;

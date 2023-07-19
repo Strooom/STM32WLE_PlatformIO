@@ -6,33 +6,33 @@
 
 #include "sensortype.h"
 
-const char* toString(sensorType type) {
+const char* toString(sensorChannelType type) {
     switch (type) {
-        case sensorType::batteryChargeLevel:
+        case sensorChannelType::batteryChargeLevel:
             return "batteryChargeLevel";
             break;
 
-        case sensorType::batteryVoltage:
+        case sensorChannelType::batteryVoltage:
             return "batteryChargeLevel";
             break;
 
-        case sensorType::BME680Temperature:
+        case sensorChannelType::BME680Temperature:
             return "BME680 - Temperature";
             break;
 
-        case sensorType::BME680RelativeHumidity:
+        case sensorChannelType::BME680RelativeHumidity:
             return "BME680 - Relative Humidity";
             break;
 
-        case sensorType::BME680BarometricPressure:
+        case sensorChannelType::BME680BarometricPressure:
             return "BME680 - Barometer";
             break;
 
-        case sensorType::TSL25911VisibleLight:
+        case sensorChannelType::TSL25911VisibleLight:
             return "TSL25911 - Visible Light";
             break;
 
-        case sensorType::TSL25911Infrared:
+        case sensorChannelType::TSL25911Infrared:
             return "TSL25911 - Infrared Light";
             break;
 
