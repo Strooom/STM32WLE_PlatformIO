@@ -15,6 +15,12 @@ extern I2C_HandleTypeDef hi2c2;
 extern uint8_t mockRegisters[256];
 #endif
 
+sensorChannel tsl2591::channels[nmbrChannels]{
+    {sensorChannelType::TSL25911Infrared, 0, 0, 0, 0},
+    {sensorChannelType::TSL25911VisibleLight, 0, 0, 0, 0},
+    {sensorChannelType::none, 0, 0, 0, 0},
+};
+
 tsl2591::integrationTimes tsl2591::integrationTime{integrationTimes::integrationTime100ms};
 tsl2591::gains tsl2591::gain{gains::gain1x};
 sensorState tsl2591::state{sensorState::boot};

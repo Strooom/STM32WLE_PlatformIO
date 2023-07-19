@@ -50,7 +50,6 @@ void hexAscii::hexStringToBinaryArray(const char *aHexString, uint8_t *aBinaryAr
 {
     uint32_t aHexStringLength = strlen(aHexString);
     uint32_t nmbrBytes = aHexStringLength / 2;
-    // TODO : could check if hex string length is even
 
     for (uint32_t index = 0; index < nmbrBytes; index++)
     {

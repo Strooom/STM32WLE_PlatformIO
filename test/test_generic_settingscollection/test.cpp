@@ -1,6 +1,7 @@
 #include <unity.h>
 #include "settingscollection.h"
 #include "nvs.h"
+#include <stdio.h>
 
 void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
@@ -17,7 +18,16 @@ void test_blockOverlap() {
     }
 }
 
-// TODO : add a test to verify that all blocks are withing a single page of 128 bytes
+void test_allBlocksWithinOnePage() {
+    for (uint32_t index = 0; index < (static_cast<uint32_t>(settingsCollection::settingIndex::numberOfSettings) - 1); index++) {
+        uint32_t startPage = (settingsCollection::settings[index].startAddress) / 128;
+        uint32_t endPage = (settingsCollection::settings[index].startAddress + settingsCollection::settings[index].length - 1) / 128;
+        char text[128];
+        snprintf(text, 128, "index %d", index);
+        TEST_ASSERT_EQUAL_UINT32_MESSAGE(startPage, endPage, text );
+    }
+}
+
 
 void test_write_read_setting() {
     uint8_t testByte{123};
@@ -53,7 +63,7 @@ void test_initialize_once() {
     TEST_ASSERT_FALSE(settingsCollection::isInitialized());
     settingsCollection::initializeOnce();
     TEST_ASSERT_EQUAL_UINT8(0x01, settingsCollection::read<uint8_t>(settingsCollection::settingIndex::nvsMapVersion));
-    
+
     uint8_t testArrayExpected[16]{};
     uint8_t testArrayOut[16]{};
     settingsCollection::read(settingsCollection::settingIndex::networkSessionKey, testArrayOut);
@@ -64,6 +74,7 @@ int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_isValidBlockIndex);
     RUN_TEST(test_blockOverlap);
+    RUN_TEST(test_allBlocksWithinOnePage);
     RUN_TEST(test_write_read_setting);
     RUN_TEST(test_is_initialized);
     RUN_TEST(test_initialize_once);

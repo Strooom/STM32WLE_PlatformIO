@@ -19,6 +19,9 @@ class tsl2591 {
     static float getVisibleLight();         //
     static float getInfraredLight();        //
 
+    static constexpr uint32_t nmbrChannels{3};
+    static sensorChannel channels[nmbrChannels];
+
     static bool goSleep();                  //
 
 #ifndef unitTesting

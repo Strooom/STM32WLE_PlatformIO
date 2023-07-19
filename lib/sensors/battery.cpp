@@ -60,8 +60,7 @@ const interpolationPoint battery::voltageVsCharge[nmbrBatteryTypes][nmbrInterpol
 // ### public methods ###
 
 void battery::initalize() {
-    type = static_cast<batteryType>(settingsCollection::read<uint8_t>(settingsCollection::settingIndex::batteryVersion));
-    // TODO : this could read from a corrupt flash a type value which is out of bounds -> bounds check needed
+    type = constrainToValidValue(settingsCollection::read<uint8_t>(settingsCollection::settingIndex::batteryVersion));
 #ifndef environment_desktop
     hadc.Instance                        = ADC;
     hadc.Init.ClockPrescaler             = ADC_CLOCK_SYNC_PCLK_DIV1;
