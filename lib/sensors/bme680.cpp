@@ -5,10 +5,19 @@
 // ######################################################################################
 
 #include "bme680.h"
-#include "logging.h"
+
+#ifndef environment_desktop
+#include "main.h"
+extern I2C_HandleTypeDef hi2c2;
+#else
+#include <cstring>
+uint8_t mockRegisters[256]{};
+#endif
 
 // Definition of NON-CONST STATIC variables
 bool bme680::awake{false};
+
+sensorState bme680::state{sensorState::boot};
 
 uint32_t bme680::rawDataTemperature;
 uint32_t bme680::rawDataBarometricPressure;
@@ -38,8 +47,14 @@ float bme680::calibrationCoefficientHumidity5;
 float bme680::calibrationCoefficientHumidity6;
 float bme680::calibrationCoefficientHumidity7;
 
-bool bme680::isAwake() {
-    return awake;
+bool bme680::isPresent() {
+    // 1. Check if something is connected to the I2C bus at the address of the bme680
+    if (!testI2cAddress(i2cAddress)) {
+        return false;
+    }        //
+    // 2. Check if it is a BME680 by reading the chip id register/value
+    uint8_t chipidValue = readRegister(bme680::registers::chipId);
+    return (bme680::chipIdValue == chipidValue);
 }
 
 void bme680::initialize() {
@@ -70,10 +85,12 @@ void bme680::initialize() {
     calibrationCoefficientPressure8  = static_cast<float>(static_cast<int16_t>(static_cast<uint16_t>(registerData[19]) << 8) | static_cast<uint16_t>(registerData[18]));
     calibrationCoefficientPressure9  = static_cast<float>(static_cast<int16_t>(static_cast<uint16_t>(registerData[21]) << 8) | static_cast<uint16_t>(registerData[20]));
     calibrationCoefficientPressure10 = static_cast<float>(static_cast<uint8_t>(registerData[22]));
+
+    state = sensorState::idle;
 }
 
-void bme680::run() {
-    awake = true;
+void bme680::sample() {
+    state = sensorState::sampling;
     // run a ADC conversion cycle for Temp Hum and Presure, and when ready, read and store all raw ADC results
     writeRegister(bme680::registers::ctrl_hum, 0b00000001);
     writeRegister(bme680::registers::ctrl_meas, 0b00100101);
@@ -88,8 +105,6 @@ void bme680::run() {
     rawDataTemperature        = ((static_cast<uint32_t>(registerData[3]) << 12) | (static_cast<uint32_t>(registerData[4]) << 4) | (static_cast<uint32_t>(registerData[5]) >> 4));
     rawDataRelativeHumidity   = ((static_cast<uint32_t>(registerData[6]) << 8) | (static_cast<uint32_t>(registerData[7])));
     rawDataBarometricPressure = ((static_cast<uint32_t>(registerData[0]) << 12) | (static_cast<uint32_t>(registerData[1]) << 4) | (static_cast<uint32_t>(registerData[2]) >> 4));
-
-    // logging::snprintf("MR %u / %u / %u\n", rawDataTemperature, rawDataRelativeHumidity, rawDataBarometricPressure);
 }
 
 float bme680::getTemperature() {
@@ -142,80 +157,43 @@ float bme680::getBarometricPressure() {
 }
 
 void bme680::goSleep() {
-    awake = false;
+    state = sensorState::sleeping;
 }
 
-void bme680::reset() {
-    writeRegister(bme680::registers::reset, static_cast<uint8_t>(bme680::commands::softReset));
-}
+// void bme680::reset() {
+//     writeRegister(bme680::registers::reset, static_cast<uint8_t>(bme680::commands::softReset));
+// }
 
-bool bme680::isPresent() {
-    // 1. Check if something is connected to the I2C bus at the address of the bme680
-    if (!testI2cAddress(i2cAddress)) {
-        return false;
-    }        //
-    // 2. Check if it is a BME680 by reading the chip id register/value
-    uint8_t chipidValue = readRegister(bme680::registers::chipId);
-    return (bme680::chipIdValue == chipidValue);
-}
-
+bool bme680::testI2cAddress(uint8_t addressToTest) {
 #ifndef environment_desktop
-
-#include "main.h"
-// #define showI2cCommunication
-
-extern I2C_HandleTypeDef hi2c2;
-
-bool bme680::testI2cAddress(uint8_t addressToTest) {
     return (HAL_OK == HAL_I2C_IsDeviceReady(&hi2c2, addressToTest << 1, halTrials, halTimeout));
-}
-
-uint8_t bme680::readRegister(registers registerAddress) {
-    uint8_t result[1]{0};
-    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, result, 1, halTimeout);
-#ifdef showI2cCommunication
-    logging::snprintf("Read I2C : register = [%02X], data = [%02X] \n", registerAddress, result[0]);
-#endif
-    return result[0];
-}
-
-void bme680::writeRegister(registers registerAddress, uint8_t value) {
-    HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
-}
-
-void bme680::readRegisters(uint16_t startAddress, uint16_t length, uint8_t* destination) {
-    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_8BIT, destination, length, halTimeout);
-#ifdef showI2cCommunication
-    logging::snprintf("Read I2C : register = [%02X], data[%u] = [", startAddress, length);
-    for (uint32_t index = 0; index < length; index++) {
-        logging::snprintf("%02X ", destination[index]);
-    }
-    logging::snprintf("]\n");
-#endif
-}
-
 #else
-
-bool bme680::testI2cAddress(uint8_t addressToTest) {
-    return false;
+    return true;
+#endif
 }
 
 uint8_t bme680::readRegister(registers registerAddress) {
-    switch (registerAddress) {
-        case registers::meas_status:
-            return 0x80;
-            break;
-
-        default:
-            return 0;
-            break;
-    }
+    uint8_t result;
+#ifndef environment_desktop
+    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, &result, 1, halTimeout);
+#else
+    result                                               = mockRegisters[static_cast<uint8_t>(registerAddress)];
+#endif
+    return result;
 }
 
 void bme680::writeRegister(registers registerAddress, uint8_t value) {
+#ifndef environment_desktop
+    HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
+#else
+    mockRegisters[static_cast<uint8_t>(registerAddress)] = value;
+#endif
 }
 
 void bme680::readRegisters(uint16_t startAddress, uint16_t length, uint8_t* destination) {
-}
-
+#ifndef environment_desktop
+    HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_8BIT, destination, length, halTimeout);
+#else
+    memcpy(destination, mockRegisters + startAddress, length);
 #endif
+}

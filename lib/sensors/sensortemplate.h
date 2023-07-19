@@ -13,7 +13,7 @@ class sensorDevice {
   public:
     static bool isPresent();
     static void initalize();
-    static void sample();
+    static void sample(); // TODO : should become startSample() and isSampleReady() so we become non-blocking
 
     static float getTemperature();
     static float getRelativeHumidity();

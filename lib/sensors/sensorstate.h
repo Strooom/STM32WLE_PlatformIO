@@ -7,7 +7,7 @@
 #pragma once
 #include <stdint.h>
 
-enum class state : uint32_t {
+enum class sensorState : uint32_t {
     boot,
     sleeping,
     sampling,

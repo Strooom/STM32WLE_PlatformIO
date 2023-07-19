@@ -6,20 +6,33 @@
 
 #pragma once
 #include <stdint.h>
-//#include "sensorChannel.h"
+#include "sensorchannel.h"
+#include "sensortype.h"
+#include "sensorstate.h"
 
 // Represents a Bosch BME680 sensorChannel
 
 class bme680 {
   public:
-    static bool isPresent();                     // detect if there is an BME680 on the I2C bus
-    static void initialize();                    //
-    static bool isAwake();                       // check if sampling already done
-    static void run();                           // wakeUp and do the sampling
+    static bool isPresent();
+    static void initialize();
+    static void sample();
+
+    // static bool isAwake();                       // check if sampling already done
+
+    // static void run();                           // wakeUp and do the sampling
     static float getTemperature();               //
     static float getRelativeHumidity();          //
     static float getBarometricPressure();        //
+
     static void goSleep();                       //
+
+#ifndef unitTesting
+
+  private:
+#endif
+
+    static sensorState state;
 
     static constexpr uint8_t i2cAddress{0x76};        // default I2C address for this sensorChannel, DSO tied to GND on our hardware
     static constexpr uint8_t halTrials{0x03};         // ST HAL requires a 'retry' parameters
@@ -27,23 +40,23 @@ class bme680 {
 
     // Registers
     enum class registers : uint8_t {
-        chipId     = 0xD0,        // address of register holding chipId
-        reset      = 0xE0,        // address of register to reset the device : Write 0xB6
-        variant_id = 0xF0,        // address of register to reset the device : Write 0xB6
-        ctrl_hum   = 0x72,        // address of register to set humidity oversampling
-        ctrl_meas  = 0x74,        // address of register to set temperature & pressure versampling
-        config     = 0x75,        // address of register to set IIR filter & power mode
+        chipId     = 0xD0,         // address of register holding chipId
+        reset      = 0xE0,         // address of register to reset the device : Write 0xB6
+        variant_id = 0xF0,         // address of register to reset the device : Write 0xB6
+        ctrl_hum   = 0x72,         // address of register to set humidity oversampling
+        ctrl_meas  = 0x74,         // address of register to set temperature & pressure versampling
+        config     = 0x75,         // address of register to set IIR filter & power mode
 
-        temp_xlsb = 0x24,        // address of register to read temperature XLSB
-        temp_lsb  = 0x23,        // address of register to read temperature LSB
-        temp_msb  = 0x22,        // address of register to read temperature MSB
+        temp_xlsb = 0x24,          // address of register to read temperature XLSB
+        temp_lsb  = 0x23,          // address of register to read temperature LSB
+        temp_msb  = 0x22,          // address of register to read temperature MSB
 
-        hum_lsb = 0x26,        // address of register to read humidity LSB
-        hum_msb = 0x25,        // address of register to read humidity MSB
+        hum_lsb = 0x26,            // address of register to read humidity LSB
+        hum_msb = 0x25,            // address of register to read humidity MSB
 
-        press_xlsb = 0x8C,        // address of register to read pressure LSB
-        press_lsb  = 0x8B,        // address of register to read pressure LSB
-        press_msb  = 0x8A,        // address of register to read pressure MSB
+        press_xlsb = 0x8C,         // address of register to read pressure LSB
+        press_lsb  = 0x8B,         // address of register to read pressure LSB
+        press_msb  = 0x8A,         // address of register to read pressure MSB
 
         meas_status = 0x1D,        // address of register to read measurement status
 
@@ -65,7 +78,6 @@ class bme680 {
     // Other
     static constexpr uint8_t chipIdValue{0x61};        // value to expect at the chipIdregister, this allows to discover/recognize the BME68x
 
-  private:
     static void reset();                                                                            // soft-reset
     static bool testI2cAddress(uint8_t addressToTest);                                              //
     static uint8_t readRegister(registers aRegister);                                               // read a single register
