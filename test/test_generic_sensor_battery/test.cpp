@@ -27,10 +27,20 @@ void test_interpolation() {
     TEST_ASSERT_EQUAL_UINT8(128, battery::calculateChargeLevel(3.2F));         // voltage at 50%
 }
 
+void test_measurements() {
+    TEST_ASSERT_TRUE(battery::isPresent());
+    battery::initalize();
+    battery::sample();
+
+    TEST_ASSERT_EQUAL_FLOAT(3.2F, battery::getVoltage());
+    TEST_ASSERT_EQUAL_FLOAT(128.0F, battery::getChargeLevel());
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_checkVoltageVsCharge);
     RUN_TEST(test_interpolation);
+    RUN_TEST(test_measurements);
     UNITY_END();
 }
 
