@@ -37,10 +37,10 @@ class aes {
     static uint8_t substituteByte(const uint8_t theByte);
     static void substituteBytes(uint8_t State[4][4]);
     static void XOR(uint8_t State[4][4], uint8_t theKey[16]);
-    static void addRoundKey(uint8_t *Round_Key, uint8_t (*State)[4]);
+    static void addRoundKey(uint8_t *Round_Key, uint8_t State[4][4]);
     static void shiftRows(uint8_t state[4][4]);
-    static void shiftRows2(unsigned char (*State)[4]);
-    static void mixColumns(unsigned char (*State)[4]);
+    static void shiftRows2(uint8_t state[4][4]);
+    static void mixColumns(uint8_t state[4][4]);
     static void calculateRoundKey(int Round, uint8_t theKey[16]);
     
 };

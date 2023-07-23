@@ -62,7 +62,6 @@ void aes::matrixToVector(uint8_t matrixIn[4][4], uint8_t vectorOut[16]) {
 //   AES_KEYR1 = keyWords[2]
 //   AES_KEYR0 = keyWords[3]
 
-
 void aes::bytesToWords(uint8_t bytesIn[16], uint32_t wordsOut[4]) {
     for (auto i = 0; i < 4; i++) {
         wordsOut[i] = bytesIn[i * 4] << 24 | bytesIn[i * 4 + 1] << 16 | bytesIn[i * 4 + 2] << 8 | bytesIn[i * 4 + 3];
@@ -82,30 +81,29 @@ uint8_t aes::substituteByte(const uint8_t theByte) {
     return sBox[theByte];
 }
 
-void aes::substituteBytes(uint8_t State[4][4]) {
-    for (auto Column = 0; Column < 4; Column++) {
-        for (auto Row = 0; Row < 4; Row++) {
-            State[Row][Column] = aes::substituteByte(State[Row][Column]);
+void aes::substituteBytes(uint8_t state[4][4]) {
+    for (auto column = 0; column < 4; column++) {
+        for (auto row = 0; row < 4; row++) {
+            state[row][column] = aes::substituteByte(state[row][column]);
         }
     }
 }
 
-void aes::XOR(uint8_t State[4][4], uint8_t theKey[16]) {
+void aes::XOR(uint8_t state[4][4], uint8_t theKey[16]) {
     uint8_t keyMatrix[4][4];
     aes::vectorToMatrix(theKey, keyMatrix);
     for (auto row = 0; row < 4; row++) {
         for (auto col = 0; col < 4; col++) {
-            State[row][col] ^= keyMatrix[row][col];
+            state[row][col] ^= keyMatrix[row][col];
         }
     }
 }
 
-void aes::addRoundKey(uint8_t* Round_Key, uint8_t (*State)[4]) {
-    unsigned char Row, Collum;
-
-    for (Collum = 0; Collum < 4; Collum++) {
-        for (Row = 0; Row < 4; Row++) {
-            State[Row][Collum] ^= Round_Key[Row + (Collum << 2)];
+void aes::addRoundKey(uint8_t* roundKey, uint8_t state[4][4]) {
+    uint8_t row, column;
+    for (column = 0; column < 4; column++) {
+        for (row = 0; row < 4; row++) {
+            state[row][column] ^= roundKey[row + (column << 2)];
         }
     }
 }
@@ -122,49 +120,44 @@ void aes::shiftRows(uint8_t state[4][4]) {
     }
 }
 
-void aes::shiftRows2(unsigned char (*State)[4]) {
-    unsigned char Buffer;
+void aes::shiftRows2(uint8_t state[4][4]) {
+    uint8_t temp;
 
-    // Store firt byte in buffer
-    Buffer = State[1][0];
-    // Shift all bytes
-    State[1][0] = State[1][1];
-    State[1][1] = State[1][2];
-    State[1][2] = State[1][3];
-    State[1][3] = Buffer;
-
-    Buffer      = State[2][0];
-    State[2][0] = State[2][2];
-    State[2][2] = Buffer;
-    Buffer      = State[2][1];
-    State[2][1] = State[2][3];
-    State[2][3] = Buffer;
-
-    Buffer      = State[3][3];
-    State[3][3] = State[3][2];
-    State[3][2] = State[3][1];
-    State[3][1] = State[3][0];
-    State[3][0] = Buffer;
+    temp        = state[1][0];
+    state[1][0] = state[1][1];
+    state[1][1] = state[1][2];
+    state[1][2] = state[1][3];
+    state[1][3] = temp;
+    temp        = state[2][0];
+    state[2][0] = state[2][2];
+    state[2][2] = temp;
+    temp        = state[2][1];
+    state[2][1] = state[2][3];
+    state[2][3] = temp;
+    temp        = state[3][3];
+    state[3][3] = state[3][2];
+    state[3][2] = state[3][1];
+    state[3][1] = state[3][0];
+    state[3][0] = temp;
 }
 
-void aes::mixColumns(unsigned char (*State)[4]) {
-    unsigned char Row, Collum;
-    unsigned char a[4], b[4];
+void aes::mixColumns(uint8_t state[4][4]) {
+    uint8_t row, column;
+    uint8_t a[4], b[4];
 
-    for (Collum = 0; Collum < 4; Collum++) {
-        for (Row = 0; Row < 4; Row++) {
-            a[Row] = State[Row][Collum];
-            b[Row] = (State[Row][Collum] << 1);
+    for (column = 0; column < 4; column++) {
+        for (row = 0; row < 4; row++) {
+            a[row] = state[row][column];
+            b[row] = (state[row][column] << 1);
 
-            if ((State[Row][Collum] & 0x80) == 0x80) {
-                b[Row] ^= 0x1B;
+            if ((state[row][column] & 0x80) == 0x80) {
+                b[row] ^= 0x1B;
             }
         }
-
-        State[0][Collum] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
-        State[1][Collum] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
-        State[2][Collum] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
-        State[3][Collum] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
+        state[0][column] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3];
+        state[1][column] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3];
+        state[2][column] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3];
+        state[3][column] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3];
     }
 }
 
@@ -179,27 +172,27 @@ void aes::expandKey(uint8_t theKey[16]) {
 }
 
 void aes::calculateRoundKey(int Round, uint8_t roundKey[16]) {
-    unsigned char i, j, b, Rcon;
-    unsigned char Temp[4];
+    uint8_t i, j, b, Rcon;
+    uint8_t temp[4];
 
     // Calculate Rcon
     Rcon = roundConstant[Round - 1];
 
     //  Calculate first Temp
     //  Copy laste byte from previous key and substitute the byte, but shift the matrix contents around by 1.
-    Temp[0] = aes::substituteByte(roundKey[12 + 1]);
-    Temp[1] = aes::substituteByte(roundKey[12 + 2]);
-    Temp[2] = aes::substituteByte(roundKey[12 + 3]);
-    Temp[3] = aes::substituteByte(roundKey[12 + 0]);
+    temp[0] = aes::substituteByte(roundKey[12 + 1]);
+    temp[1] = aes::substituteByte(roundKey[12 + 2]);
+    temp[2] = aes::substituteByte(roundKey[12 + 3]);
+    temp[3] = aes::substituteByte(roundKey[12 + 0]);
 
     //  XOR with Rcon
-    Temp[0] ^= Rcon;
+    temp[0] ^= Rcon;
 
     //  Calculate new key
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            roundKey[j + (i << 2)] ^= Temp[j];
-            Temp[j] = roundKey[j + (i << 2)];
+            roundKey[j + (i << 2)] ^= temp[j];
+            temp[j] = roundKey[j + (i << 2)];
         }
     }
 }
