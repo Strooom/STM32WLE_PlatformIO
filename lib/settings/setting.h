@@ -7,9 +7,8 @@
 #pragma once
 #include <stdint.h>
 
-// application settings are stored in the EEPROM
-// they can have different sizes (uint8t = 1 byte, uint32_t = 4 bytes, aesKey = 16 bytes, ...)
-// so each setting has a startAddress and a length
+// Application parameters and variables that need to be non-volatile (ie. keep their value even when the device lost power or the software resets) are stored in the EEPROM
+// They can have different sizes (uint8t = 1 byte, uint32_t = 4 bytes, aesKey = 16 bytes, ...) so each setting has a startAddress and a length
 
     class setting {
       public:

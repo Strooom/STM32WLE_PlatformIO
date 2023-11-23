@@ -6,6 +6,11 @@
 
 #include "display.h"
 
+#ifdef target
+#include "main.h"
+extern SPI_HandleTypeDef hspi2;
+#endif
+
 // extern peripheralRegister PORTA_BSRR;
 // extern peripheralRegister PORTB_BSRR;
 // extern peripheralRegister PORTC_BSRR;
@@ -20,11 +25,11 @@ uint8_t display::displayBuffer[display::bufferSize]{0};
 void display::initialize() {
     reset();
     waitWhileBusy();
-    
+
     uint8_t commandData[4]{0};
 
-    commandData[0] = 0x7C;
-    commandData[1] = 0x00;
+    commandData[0] = 0xC7;        // this seems to be (height - 1) % 256
+    commandData[1] = 0x00;        // this seems to be (height - 1) / 256
     commandData[2] = 0x00;
     writeCommand(SSD1681Commands::DRIVER_OUTPUT_CONTROL, commandData, 3);
     waitWhileBusy();
@@ -34,12 +39,12 @@ void display::initialize() {
     waitWhileBusy();
 
     commandData[0] = 0x00;
-    commandData[1] = 0x18;
+    commandData[1] = 0x18;        // this seems to be ((widthInPixels / 8) - 1)
     writeCommand(SSD1681Commands::SET_RAM_X_ADDRESS_START_END_POSITION, commandData, 2);
     waitWhileBusy();
 
-    commandData[0] = 0xC7;
-    commandData[1] = 0x00;
+    commandData[0] = 0xC7;        // this seems to be (height - 1) % 256
+    commandData[1] = 0x00;        // this seems to be (height - 1) / 256
     commandData[2] = 0x00;
     commandData[3] = 0x00;
     writeCommand(SSD1681Commands::SET_RAM_Y_ADDRESS_START_END_POSITION, commandData, 4);
@@ -49,12 +54,15 @@ void display::initialize() {
     writeCommand(SSD1681Commands::BORDER_WAVEFORM_CONTROL, commandData, 1);
     waitWhileBusy();
 
+    // EPD_W21_WriteCMD(0x18);        // Read built-in temperature sensor
+    // EPD_W21_WriteDATA(0x80);
+
     commandData[0] = 0x0;
     writeCommand(SSD1681Commands::SET_RAM_X_ADDRESS_COUNTER, commandData, 1);
     waitWhileBusy();
 
-    commandData[0] = 0xC7;
-    commandData[1] = 0x00;
+    commandData[0] = 0xC7;        // this seems to be (height - 1) % 256
+    commandData[1] = 0x00;        // this seems to be (height - 1) / 256
     writeCommand(SSD1681Commands::SET_RAM_Y_ADDRESS_COUNTER, commandData, 2);
     waitWhileBusy();
 }
@@ -63,7 +71,6 @@ void display::goSleep() {
     uint8_t commandData[1]{0x01};
     writeCommand(SSD1681Commands::DEEP_SLEEP_MODE, commandData, 1);
 }
-
 
 void display::setPixel(uint32_t x, uint32_t y) {
     uint32_t byteOffset       = getByteOffset(x, y);
@@ -96,7 +103,7 @@ void display::changePixel(uint32_t x, uint32_t y, bool onOff) {
 }
 
 bool display::inBounds(uint32_t c) {
-    return (c < display::width);
+    return (c < display::widthInPixels);
 }
 
 bool display::inBounds(uint32_t x, uint32_t y) {
@@ -114,11 +121,11 @@ void display::mirrorCoordinate(uint32_t& c, uint32_t maxC) {
 }
 
 uint32_t display::getByteOffset(uint32_t x, uint32_t y) {
-    return ((y * 25) + (x / 8));
+    return ((y * widthInBytes) + (x / 8));
 }
 
 uint32_t display::getBitOffset(uint32_t x) {
-    return (7-(x % 8));
+    return (7 - (x % 8));
 }
 
 void display::rotateAndMirrorCoordinates(uint32_t& x, uint32_t& y) {
@@ -127,15 +134,15 @@ void display::rotateAndMirrorCoordinates(uint32_t& x, uint32_t& y) {
             break;
         case displayRotation::rotation90:
             swapCoordinates(x, y);
-            mirrorCoordinate(y, display::height);
+            mirrorCoordinate(y, display::heightInPixels);
             break;
         case displayRotation::rotation180:
-            mirrorCoordinate(x, display::width);
-            mirrorCoordinate(y, display::height);
+            mirrorCoordinate(x, display::widthInPixels);
+            mirrorCoordinate(y, display::heightInPixels);
             break;
         case displayRotation::rotation270:
             swapCoordinates(x, y);
-            mirrorCoordinate(x, display::width);
+            mirrorCoordinate(x, display::widthInPixels);
             break;
     }
 
@@ -143,23 +150,20 @@ void display::rotateAndMirrorCoordinates(uint32_t& x, uint32_t& y) {
         case displayMirroring::none:
             break;
         case displayMirroring::horizontal:
-            mirrorCoordinate(x, display::width);
+            mirrorCoordinate(x, display::widthInPixels);
             break;
         case displayMirroring::vertical:
-            mirrorCoordinate(y, display::height);
+            mirrorCoordinate(y, display::heightInPixels);
             break;
         case displayMirroring::both:
-            mirrorCoordinate(x, display::width);
-            mirrorCoordinate(y, display::height);
+            mirrorCoordinate(x, display::widthInPixels);
+            mirrorCoordinate(y, display::heightInPixels);
             break;
     }
 }
 
-#ifndef environment_desktop
-#include "main.h"
-extern SPI_HandleTypeDef hspi2;
-
 void display::reset() {
+#ifndef generic
     HAL_GPIO_WritePin(GPIOA, displayReset_Pin, GPIO_PIN_RESET);
     // PORTA_BSRR.write(1 << 0);               // reset = LOW
     HAL_Delay(10U);        // datasheet, section 4.2
@@ -167,9 +171,11 @@ void display::reset() {
     // PORTA_BSRR.write(1 << (0 + 16));        // reset = HIGH
     HAL_Delay(10U);        //
     writeCommand(SSD1681Commands::SW_RESET, nullptr, 0);
+#endif
 }
 
-void display::setDataOrCommand(bool isData) const {
+void display::setDataOrCommand(bool isData) {
+#ifndef generic
     if (isData) {
         HAL_GPIO_WritePin(GPIOB, displayDataCommand_Pin, GPIO_PIN_SET);
         // PORTB_BSRR.write(1 << 14);               // data = HIGH
@@ -177,9 +183,11 @@ void display::setDataOrCommand(bool isData) const {
         HAL_GPIO_WritePin(GPIOB, displayDataCommand_Pin, GPIO_PIN_RESET);
         // PORTB_BSRR.write(1 << (14 + 16));        // command = LOW
     }
+#endif
 }
 
 void display::selectChip(bool active) {
+#ifndef generic
     if (active) {
         HAL_GPIO_WritePin(GPIOB, displayChipSelect_Pin, GPIO_PIN_RESET);
         // PORTB_BSRR.write(1 << (5 + 16));        // active = LOW
@@ -187,16 +195,23 @@ void display::selectChip(bool active) {
         HAL_GPIO_WritePin(GPIOB, displayChipSelect_Pin, GPIO_PIN_SET);
         // PORTB_BSRR.write(1 << 5);               // release = HIGH
     }
+#endif
 }
 
 bool display::isBusy() {
+#ifndef generic
     return (GPIO_PIN_SET == HAL_GPIO_ReadPin(GPIOB, displayBusy_Pin));
-    // return (PORTB_IDR.readBit(10));
+// return (PORTB_IDR.readBit(10));
+#else
+    return false;
+#endif
 }
 
 void display::write(uint8_t* data, uint32_t length) {
     selectChip(true);
+#ifndef generic
     HAL_SPI_Transmit(&hspi2, data, length, 1000);        // TODO : get the HAL timeout stuff right
+#endif
     selectChip(false);
 }
 
@@ -214,15 +229,19 @@ void display::writeData(uint8_t data) {
 }
 
 void display::writeCommand(SSD1681Commands theCommand, uint8_t* theData, uint32_t dataLength) {
-    setChipSelect(true);
+    selectChip(true);
     setDataOrCommand(false);
     uint8_t commandAsByte = static_cast<uint8_t>(theCommand);
+#ifndef generic
     HAL_SPI_Transmit(&hspi2, &commandAsByte, 1U, 1U);
+#endif
     if (dataLength > 0) {
         setDataOrCommand(true);
+#ifndef generic
         HAL_SPI_Transmit(&hspi2, theData, dataLength, 1U);
+#endif
     }
-    setChipSelect(false);
+    selectChip(false);
 }
 
 void display::waitWhileBusy() {
@@ -231,8 +250,6 @@ void display::waitWhileBusy() {
         asm("NOP");
     }
 }
-
-
 
 void display::set()
 // EPD* epd,
@@ -284,12 +301,30 @@ void display::clear() {
     // }
 }
 
-void display::show() {
+void display::update(updateMode theMode) {
+    writeCommand(SSD1681Commands::WRITE_RAM, nullptr, 0);
+    // now write data from RAM to display
+
+    // for (i = 0; i < EPD_ARRAY; i++) {
+    //     EPD_W21_WriteDATA(datas[i]);
+    // }
+
     uint8_t commandData[1]{0xC4};
     writeCommand(SSD1681Commands::DISPLAY_UPDATE_CONTROL_2, commandData, 1);
-
+    switch (theMode) {
+        default:
+        case updateMode::full:
+            // EPD_W21_WriteDATA(0xF7);  TODO : some more commands need to be reverse engineered here..
+            break;
+        case updateMode::fast:
+            // EPD_W21_WriteDATA(0xC7);
+            break;
+        case updateMode::partial:
+            // EPD_W21_WriteDATA(0xFF);
+            break;
+    }
     writeCommand(SSD1681Commands::MASTER_ACTIVATION, nullptr, 0);
-    writeCommand(SSD1681Commands::TERMINATE_FRAME_READ_WRITE, nullptr, 0);
+    writeCommand(SSD1681Commands::TERMINATE_FRAME_READ_WRITE, nullptr, 0);        // TODO : this does not seem to be used in example SW
 }
 
 // static void EPD_SetMemoryArea(EPD* epd, int x_start, int y_start, int x_end, int y_end) {
@@ -316,20 +351,3 @@ void display::show() {
 //     EPD_SendData(epd, (y >> 8) & 0xFF);
 //     EPD_WaitUntilIdle(epd);
 // }
-
-#else
-
-// TODO : a desktop console version goes here
-
-void display::reset() {}
-bool display::isBusy() { return false; }
-void display::setDataOrCommand(bool isData) {}
-void display::selectChip(bool active) {}
-
-void display::write(uint8_t* data, uint32_t length) {}
-void display::write(uint8_t data) {}
-void display::writeData(uint8_t data) {}
-void display::writeData(uint8_t* data, uint32_t length) {}
-void display::writeCommand(SSD1681Commands theCommand, uint8_t* theData, uint32_t dataLength) {}
-void display::waitWhileBusy() {}
-#endif

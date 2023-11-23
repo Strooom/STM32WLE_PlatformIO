@@ -6,12 +6,12 @@
 
 #include "nvs.h"
 
-#ifndef environment_desktop
+#ifndef generic
 #include "main.h"
 extern I2C_HandleTypeDef hi2c2;
 #else
 #include <cstring>        // required for memcpy
-static uint8_t memory[nonVolatileStorage::size];        // array emulating the EEPROM for uintTesting
+static uint8_t memory[nonVolatileStorage::size];        // array emulating the EEPROM for unitTesting
 #endif
 
 void nonVolatileStorage::erase() {
@@ -33,7 +33,7 @@ void nonVolatileStorage::fill(uint8_t value) {
 }
 
 bool nonVolatileStorage::isPresent() {
-#ifndef environment_desktop
+#ifndef generic
     if (HAL_OK != HAL_I2C_IsDeviceReady(&hi2c2, i2cAddress << 1, halTrials, halTimeout)) {        // testing presence of the first bank of 64K (U7)
         return false;
     }
@@ -44,16 +44,16 @@ bool nonVolatileStorage::isPresent() {
     return true;
 }
 
-void nonVolatileStorage::read(uint32_t startAddress, uint8_t* data, uint32_t dataLength) {
-#ifndef environment_desktop
+void nonVolatileStorage::read(const uint32_t startAddress, uint8_t* data, const uint32_t dataLength) {
+#ifndef generic
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_16BIT, data, dataLength, halTimeout);        //
 #else
     memcpy(data, memory + startAddress, dataLength);
 #endif
 }
 
-void nonVolatileStorage::write(uint32_t startAddress, const uint8_t* data, uint32_t dataLength) {
-#ifndef environment_desktop
+void nonVolatileStorage::write(const uint32_t startAddress, const uint8_t* data, const uint32_t dataLength) {
+#ifndef generic
     HAL_GPIO_WritePin(GPIOB, writeProtect_Pin, GPIO_PIN_RESET);        // Drive writeProtect LOW = enable write
     HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_16BIT, data, dataLength, halTimeout);
     HAL_Delay(writeCycleTime);                                         // the EEPROM needs 3.5 ms to internally write the data, if WriteProtect goes HIGH too early, the data is not written

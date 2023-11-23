@@ -7,7 +7,7 @@
 #include "tsl2591.h"
 #include "logging.h"
 
-#ifndef environment_desktop
+#ifndef generic
 #include "main.h"
 extern I2C_HandleTypeDef hi2c2;
 #else
@@ -129,7 +129,7 @@ void tsl2591::decreaseSensitivity() {
 }
 
 bool tsl2591::testI2cAddress(uint8_t addressToTest) {
-#ifndef environment_desktop
+#ifndef generic
     return (HAL_OK == HAL_I2C_IsDeviceReady(&hi2c2, addressToTest << 1, halTrials, halTimeout));
 #else
     return true;
@@ -140,7 +140,7 @@ uint8_t tsl2591::readRegister(registers registerAddress) {
     uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
     uint8_t result;
 
-#ifndef environment_desktop
+#ifndef generic
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &result, 1, halTimeout);
 #else
     result                                               = mockRegisters[static_cast<uint8_t>(registerAddress)];
@@ -150,7 +150,7 @@ uint8_t tsl2591::readRegister(registers registerAddress) {
 
 void tsl2591::writeRegister(registers registerAddress, uint8_t value) {
     uint16_t command = commandMask | static_cast<uint16_t>(registerAddress);
-#ifndef environment_desktop
+#ifndef generic
     HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
 #else
     mockRegisters[static_cast<uint8_t>(registerAddress)] = value;

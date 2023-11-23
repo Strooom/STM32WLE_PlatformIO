@@ -31,7 +31,7 @@ class sensorChannel {
 #endif
 
     sensorChannelType type;
-    uint32_t oversamplingLowPower;         // low power = on battery
+    uint32_t oversamplingLowPower;        // low power = on battery
     uint32_t prescalerLowPower;
     uint32_t oversamplingHighPower;        // high power =  on USB power
     uint32_t prescalerHighPower;
@@ -49,4 +49,6 @@ class sensorChannel {
     void limitPrescaleCounter(uint32_t prescaler);
     void limitOversamplingCounter(uint32_t oversampling);
     bool isActive() const;
+
+    friend class sensorChannelCollection;
 };

@@ -9,8 +9,8 @@
 
 class nonVolatileStorage {
   public:
-    static bool isPresent();              // testing if the EEPROM is found correctly on the I2C bus
-    
+    static bool isPresent();        // testing if the EEPROM is found correctly on the I2C bus
+
     static constexpr uint32_t size{64 * 1024};
     static constexpr uint8_t i2cAddress{0x50};         // default I2C address of the first EEPROM, the second one has an address i2cAddress+1, set by its A0 pin being ties to VDD
     static constexpr uint8_t halTrials{0x03};          // ST HAL requires a 'retry' parameters
@@ -21,10 +21,11 @@ class nonVolatileStorage {
 
   private:
 #endif
-    static void read(uint32_t startAddress, uint8_t* data, uint32_t dataLength);               // low-level I2C reading from EEPROM
-    static void write(uint32_t startAddress, const uint8_t* data, uint32_t dataLength);        // low-level I2C writing to EEPROM
-    static void erase();                                                                       // erase the EEPROM by writing 0xFF to all locations
-    static void fill(uint8_t value);                                                           // fill the EEPROM with a specific value - only used for unitTesting
+    static void read(const uint32_t startAddress, uint8_t* data, const uint32_t dataLength);         // low-level I2C reading from EEPROM
+    static void write(const uint32_t startAddress, const uint8_t* data, const uint32_t dataLength);        // low-level I2C writing to EEPROM
+    static void erase();                                                                             // erase the EEPROM by writing 0xFF to all locations
+    static void fill(uint8_t value);                                                                 // fill the EEPROM with a specific value - only used for unitTesting
 
-    friend class settingsCollection;                                                           // settings can access the EEPROM
+    friend class settingsCollection;           // settings can access the EEPROM
+    friend class measurementCollection;        // settings can access the EEPROM
 };

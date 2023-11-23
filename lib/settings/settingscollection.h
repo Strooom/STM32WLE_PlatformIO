@@ -45,21 +45,6 @@ class settingsCollection {
     static const setting settings[static_cast<uint32_t>(settingIndex::numberOfSettings)];        // static member is initialized in settingscollection.cpp
 };
 
-// This was an alternative with union, which I may try to get working some day
-// template <typename dataType>
-// void settingsCollection::save(settingIndex theIndex, const dataType& sourceData) {
-//     if (settingsCollection::isValidIndex(theIndex)) {
-//         union {
-//             dataType dataIn;
-//             uint8_t bytesOut[sizeof(dataType)];
-//         } sourceDataUnion{sourceData};
-//         uint32_t startAddress = settingsCollection::settings[static_cast<uint32_t>(theIndex)].startAddress;
-//         uint32_t length       = settingsCollection::settings[static_cast<uint32_t>(theIndex)].length;
-//         nonVolatileStorage::write(startAddress, &sourceDataUnion.bytesOut, length);
-//     }
-// }
-
-
 template <typename dataType>
 void settingsCollection::save(settingIndex theIndex, const dataType& sourceData) {
     if (settingsCollection::isValidIndex(theIndex)) {

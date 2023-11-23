@@ -100,7 +100,7 @@ void graphics::drawCharacter(uint32_t xStart, uint32_t yStart, const font &theFo
 }
 
 void graphics::drawText(uint32_t xStart, uint32_t yStart, const font &theFont, const char *theText) {
-    uint32_t maxStringLength = ((display::width - xStart) / theFont.width) + 1;
+    uint32_t maxStringLength = ((display::widthInPixels - xStart) / theFont.width) + 1;
     uint32_t charachterIndex{0};
     while (theText[charachterIndex] != '\0' && charachterIndex < maxStringLength) {
         drawCharacter(xStart + (charachterIndex * theFont.width), yStart, theFont, theText[charachterIndex]);

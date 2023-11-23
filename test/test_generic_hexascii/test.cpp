@@ -51,19 +51,19 @@ void test_hexCharacterFromValue() {
     TEST_ASSERT_EQUAL('?', hexAscii::hexCharacterFromValue(0x10));
 }
 
-void test_hexStringToBinaryArray() {
+void test_hexStringToByteArray() {
     const char input[17] = "0123456789ABCDEF";
     uint8_t output[8];
     uint8_t expectedOutput[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-    hexAscii::hexStringToBinaryArray(input, output);
+    hexAscii::hexStringToByteArray(input, output);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedOutput, output, 8);
 }
 
-void test_binaryArrayToHexString() {
+void test_byteArrayToHexString() {
     uint8_t input[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
     char output[17];        // 1 extra for terminating zero
     const char expectedOutput[17] = "0123456789ABCDEF";
-    hexAscii::binaryArrayToHexString(input, 8, output);
+    hexAscii::byteArrayToHexString(input, 8, output);
     TEST_ASSERT_EQUAL_STRING(expectedOutput, output);
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_isHexCharacter);
     RUN_TEST(test_valueFromHexCharacter);
     RUN_TEST(test_hexCharacterFromValue);
-    RUN_TEST(test_hexStringToBinaryArray);
-    RUN_TEST(test_binaryArrayToHexString);
+    RUN_TEST(test_hexStringToByteArray);
+    RUN_TEST(test_byteArrayToHexString);
     UNITY_END();
 }

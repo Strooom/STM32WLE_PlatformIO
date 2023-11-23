@@ -18,7 +18,7 @@ class power {
   private:
 #endif
     static bool usbPower;        // remembers previous usbPresent state
-#ifdef environment_desktop
+#ifdef generic
     static bool mockUsbPower;        // this is only there during unit testing on desktop
 #endif
 };

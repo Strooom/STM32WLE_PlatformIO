@@ -27,3 +27,4 @@ enum class sensorChannelType : uint32_t {
 };
 
 const char *toString(sensorChannelType aChannel);
+

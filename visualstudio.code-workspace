@@ -2,6 +2,14 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../LoRa-v3-PCB/datasheets/GDEY0154D67/S-GDEY0154D67-2FP-20230516"
 		}
-	]
+	],
+	"settings": {
+		"files.associations": {
+			"stm32_systime_if_template.h": "c"
+		}
+	}
 }

@@ -2,7 +2,7 @@
 
 bool power::usbPower{false};
 
-#ifndef environment_desktop
+#ifndef generic
 
 #include "main.h"
 

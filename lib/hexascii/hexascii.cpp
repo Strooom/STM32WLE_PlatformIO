@@ -46,7 +46,7 @@ uint8_t hexAscii::hexCharacterFromValue(uint8_t aValue)
         return '?';
 }
 
-void hexAscii::hexStringToBinaryArray(const char *aHexString, uint8_t *aBinaryArray)
+void hexAscii::hexStringToByteArray(const char *aHexString, uint8_t *aBinaryArray)
 {
     uint32_t aHexStringLength = strlen(aHexString);
     uint32_t nmbrBytes = aHexStringLength / 2;
@@ -64,7 +64,7 @@ void hexAscii::hexStringToBinaryArray(const char *aHexString, uint8_t *aBinaryAr
     }
 }
 
-void hexAscii::binaryArrayToHexString(const uint8_t *aBinaryArray, uint32_t aBinaryArrayLength, char *aHexString)
+void hexAscii::byteArrayToHexString(const uint8_t *aBinaryArray, uint32_t aBinaryArrayLength, char *aHexString)
 {
     for (uint32_t index = 0; index < aBinaryArrayLength; index++)
     {

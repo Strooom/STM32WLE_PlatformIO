@@ -25,7 +25,7 @@ class circularBuffer {
     };
 
     void push(itemType event) {
-#ifndef environment_desktop
+#ifndef generic
         bool interrupts_enabled = (__get_PRIMASK() == 0);
         __disable_irq();
 #endif
@@ -35,15 +35,15 @@ class circularBuffer {
         } else {
             head = (head + 1) % bufferLength;
         }
-#ifndef environment_desktop
-        if (interrupts_enabled) {
-            __enable_irq();
-        }
+#ifndef generic
+       if (interrupts_enabled) {
+           __enable_irq();
+       }
 #endif
     };
 
     itemType pop() {
-#ifndef environment_desktop
+#ifndef generic
         bool interrupts_enabled = (__get_PRIMASK() == 0);
         __disable_irq();
 #endif
@@ -55,10 +55,10 @@ class circularBuffer {
         } else {
             result = static_cast<itemType>(0x00);
         }
-#ifndef environment_desktop
-        if (interrupts_enabled) {
-            __enable_irq();
-        }
+#ifndef generic
+      if (interrupts_enabled) {
+           __enable_irq();
+       }
 #endif
         return result;
     };

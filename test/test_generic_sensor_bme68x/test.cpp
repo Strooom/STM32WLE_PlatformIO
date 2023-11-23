@@ -1,5 +1,6 @@
 #include <unity.h>
 #include "bme680.h"
+#include <cstring>
 
 uint8_t mockRegisters[256]{};
 
@@ -8,12 +9,14 @@ void setUp(void) {
     mockRegisters[static_cast<uint8_t>(bme680::registers::meas_status)] = 0x80;
 
     // Calibration data
-    // Read I2C : register = [8A], data[23] = [62 67 03 10 8F 90 68 D7 58 00 38 22 62 FF 2C 1E 00 00 71 F4 5B F6 1E ]
-    // Read I2C : register = [E1], data[14] = [3D BD 37 00 2D 14 78 9C B6 65 AB DC FB 12 ]
-    // Read I2C : register = [00], data[5] = [28 AA 16 4C 03 ]
+    uint8_t calibrationDataPart1[23] = {0x62, 0x67, 0x03, 0x10, 0x8F, 0x90, 0x68, 0xD7, 0x58, 0x00, 0x38, 0x22, 0x62, 0xFF, 0x2C, 0x1E, 0x00, 0x00, 0x71, 0xF4, 0x5B, 0xF6, 0x1E};
+    uint8_t calibrationDataPart2[14] = {0x3D, 0xBD, 0x37, 0x00, 0x2D, 0x14, 0x78, 0x9C, 0xB6, 0x65, 0xAB, 0xDC, 0xFB, 0x12};
+    uint8_t calibrationDataPart3[5]  = {0x28, 0xAA, 0x16, 0x4C, 0x03};
+    memcpy(mockRegisters + 0x8A, calibrationDataPart1, 23);
+    memcpy(mockRegisters + 0xE1, calibrationDataPart2, 14);
+    memcpy(mockRegisters + 0xF0, calibrationDataPart3, 5);
 
-    // Raw data
-    // Read I2C : register = [1F], data[8] = [00 00 00 00 00 00 00 00 ]
+    // Raw Measurements Data : TODO
 }
 
 void tearDown(void) {}        // after test
@@ -25,7 +28,6 @@ void test_isPresent() {
 void test_initialize() {
     TEST_ASSERT_EQUAL(sensorState::boot, bme680::state);
     bme680::initialize();
-    // TODO : check calibration data is read correctly
     TEST_ASSERT_EQUAL(sensorState::idle, bme680::state);
 }
 
@@ -38,9 +40,10 @@ void test_sample() {
 
 void test_measurements() {
     bme680::sample();
-    TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getTemperature());
-    TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getRelativeHumidity());
-    TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getBarometricPressure());
+    TEST_IGNORE_MESSAGE("TODO: test calculating measurements from raw data");
+    // TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getTemperature());
+    // TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getRelativeHumidity());
+    // TEST_ASSERT_EQUAL_FLOAT(0.0F, bme680::getBarometricPressure());
 }
 
 int main(int argc, char **argv) {

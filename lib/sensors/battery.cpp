@@ -2,7 +2,11 @@
 #include "settingscollection.h"
 #include "sensorchannel.h"
 #include "sensortype.h"
+#ifndef generic
+#include "main.h"
+extern ADC_HandleTypeDef hadc;
 
+#endif
 // ### initialize static members ###
 
 batteryType battery::type{batteryType::liFePO4_700mAh};
@@ -61,7 +65,7 @@ const interpolationPoint battery::voltageVsCharge[nmbrBatteryTypes][nmbrInterpol
 
 void battery::initalize() {
     type = constrainToValidValue(settingsCollection::read<uint8_t>(settingsCollection::settingIndex::batteryVersion));
-#ifndef environment_desktop
+#ifndef generic
     hadc.Instance                        = ADC;
     hadc.Init.ClockPrescaler             = ADC_CLOCK_SYNC_PCLK_DIV1;
     hadc.Init.Resolution                 = ADC_RESOLUTION_12B;
@@ -91,7 +95,7 @@ void battery::initalize() {
 }
 
 void battery::sample() {
-#ifndef environment_desktop
+#ifndef generic
 
     HAL_ADCEx_Calibration_Start(&hadc);
     ADC_ChannelConfTypeDef theAdcConfig;

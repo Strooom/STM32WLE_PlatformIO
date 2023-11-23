@@ -11,7 +11,7 @@ void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
 
 void test_inBounds() {
-    uint32_t displayWidthHeight{display::width};        // 200
+    uint32_t displayWidthHeight{display::widthInPixels};        // 200
     TEST_ASSERT_TRUE(display::inBounds(0));
     TEST_ASSERT_TRUE(display::inBounds(displayWidthHeight - 1));
     TEST_ASSERT_FALSE(display::inBounds(displayWidthHeight));
@@ -36,7 +36,7 @@ void test_swapCoordinates() {
 
 void test_mirrorCoordinate() {
     uint32_t c{10};
-    display::mirrorCoordinate(c, display::width);
+    display::mirrorCoordinate(c, display::widthInPixels);
     TEST_ASSERT_EQUAL(189, c);
 }
 
@@ -55,7 +55,7 @@ void test_mirrorCoordinates() {
         uint32_t yTest{20};
         display::mirroring = displayMirroring::horizontal;
         display::rotateAndMirrorCoordinates(xTest, yTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 10, xTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 10, xTest);
         TEST_ASSERT_EQUAL(20, yTest);
     }
     {
@@ -63,7 +63,7 @@ void test_mirrorCoordinates() {
         uint32_t yTest{20};
         display::mirroring = displayMirroring::vertical;
         display::rotateAndMirrorCoordinates(xTest, yTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 20, yTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 20, yTest);
         TEST_ASSERT_EQUAL(10, xTest);
     }
     {
@@ -71,8 +71,8 @@ void test_mirrorCoordinates() {
         uint32_t yTest{20};
         display::mirroring = displayMirroring::both;
         display::rotateAndMirrorCoordinates(xTest, yTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 10, xTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 20, yTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 10, xTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 20, yTest);
     }
 }
 
@@ -92,34 +92,34 @@ void test_rotateCoordinates() {
         display::rotation = displayRotation::rotation90;
         display::rotateAndMirrorCoordinates(xTest, yTest);
         TEST_ASSERT_EQUAL(20, xTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 10, yTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 10, yTest);
     }
     {
         uint32_t xTest{10};
         uint32_t yTest{20};
         display::rotation = displayRotation::rotation180;
         display::rotateAndMirrorCoordinates(xTest, yTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 10, xTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 20, yTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 10, xTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 20, yTest);
     }
     {
         uint32_t xTest{10};
         uint32_t yTest{20};
         display::rotation = displayRotation::rotation270;
         display::rotateAndMirrorCoordinates(xTest, yTest);
-        TEST_ASSERT_EQUAL((display::width - 1) - 20, xTest);
+        TEST_ASSERT_EQUAL((display::widthInPixels - 1) - 20, xTest);
         TEST_ASSERT_EQUAL(10, yTest);
     }
 }
 
 void test_getByteOffset() {
     TEST_ASSERT_EQUAL(0, display::getByteOffset(0, 0));
-    TEST_ASSERT_EQUAL((display::bufferSize - 1), display::getByteOffset((display::width - 1), (display::height - 1)));
+    TEST_ASSERT_EQUAL((display::bufferSize - 1), display::getByteOffset((display::widthInPixels - 1), (display::heightInPixels - 1)));
 }
 
 void test_getBitOffset() {
     TEST_ASSERT_EQUAL(7, display::getBitOffset(0));
-    TEST_ASSERT_EQUAL(0, display::getBitOffset(display::width - 1));
+    TEST_ASSERT_EQUAL(0, display::getBitOffset(display::widthInPixels - 1));
 }
 
 void test_setPixel() {
@@ -129,11 +129,11 @@ void test_setPixel() {
     display::rotation  = displayRotation::rotation0;
     display::setPixel(0, 0);
     TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[0]);
-    display::setPixel((display::width - 1), 0);
+    display::setPixel((display::widthInPixels - 1), 0);
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[24]);
-    display::setPixel(0, (display::height - 1));
+    display::setPixel(0, (display::heightInPixels - 1));
     TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[5000 - 25]);
-    display::setPixel((display::width - 1), (display::height - 1));
+    display::setPixel((display::widthInPixels - 1), (display::heightInPixels - 1));
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[5000 - 1]);
 }
 
@@ -147,11 +147,11 @@ void test_clearPixel() {
 
     display::clearPixel(0, 0);
     TEST_ASSERT_EQUAL(0b01111111, display::displayBuffer[0]);
-    display::clearPixel((display::width - 1), 0);
+    display::clearPixel((display::widthInPixels - 1), 0);
     TEST_ASSERT_EQUAL(0b11111110, display::displayBuffer[24]);
-    display::clearPixel(0, (display::height - 1));
+    display::clearPixel(0, (display::heightInPixels - 1));
     TEST_ASSERT_EQUAL(0b01111111, display::displayBuffer[5000 - 25]);
-    display::clearPixel((display::width - 1), (display::height - 1));
+    display::clearPixel((display::widthInPixels - 1), (display::heightInPixels - 1));
     TEST_ASSERT_EQUAL(0b11111110, display::displayBuffer[5000 - 1]);
 }
 
@@ -159,14 +159,14 @@ void test_changePixel() {
     display::clearAllPixels();
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
-    for (uint32_t y = 0; y < display::height; y++) {
-        for (uint32_t x = 0; x < display::width; x++) {
+    for (uint32_t y = 0; y < display::heightInPixels; y++) {
+        for (uint32_t x = 0; x < display::widthInPixels; x++) {
             display::changePixel(x, y, ((x + y) % 2));
         }
     }
 
-    for (uint32_t y = 0; y < display::height; y++) {
-        for (uint32_t x = 0; x < (display::width / 8); x++) {
+    for (uint32_t y = 0; y < display::heightInPixels; y++) {
+        for (uint32_t x = 0; x < (display::widthInPixels / 8); x++) {
             if (y % 2) {
                 TEST_ASSERT_EQUAL(0b10101010, display::displayBuffer[25 * y + x]);
             } else {

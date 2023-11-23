@@ -1,7 +1,7 @@
 #include "measurement.h"
 #include <ctime>
 
-#ifndef environment_desktop
+#ifndef generic
 
 #include "main.h"
 

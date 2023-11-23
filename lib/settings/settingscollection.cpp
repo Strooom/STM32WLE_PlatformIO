@@ -7,7 +7,7 @@ const setting settingsCollection::settings[static_cast<uint32_t>(settingIndex::n
     {1, 1},          // displayVersion : 1 byte
     {2, 1},          // batteryVersion : 1 byte
     {3, 4},          // activelogging::sources : 4 bytes
-    {7, 121},        // unusedGeneral : extra settings can be inserted hereafter for a maximum of 121 bytes
+    {7, 121},        // unusedGeneral : extra settings can be inserted hereafter 
 
     {128, 4},        // measurementWriteIndex : 32 bits
     {132, 4},        // oldestUnsentMeasurementIndex : 32 bits

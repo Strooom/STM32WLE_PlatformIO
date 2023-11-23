@@ -1,4 +1,4 @@
-# Low-level display hardware vd 'High-level' graphics API
+# Low-level display hardware vs 'High-level' graphics API
 
 display.h / .cpp : 
 * driving the displays electrical signals
@@ -15,7 +15,7 @@ graphics.h / .cpp
 
 
 # Coordinate System
-* 0,0 is left-bottom (OpenGL convenstion)
+* 0,0 is left-bottom (OpenGL convention)
 * x is running from left to right
 * y is running from bottom to top
 
@@ -61,3 +61,5 @@ class font {
 * when erasing (an area or the whole display), you only need to draw the active pixels
 * otherwise you need to also draw the inactive pixels..
 * drawing a character, is basically drawing a bitmap (of a certain size), so it makes sense to do draw bitmaps first and to use it for drawing character
+
+Partial Update : instead of updating all pixels, you can only update the modified ones. In order to allow this, we need to keep track of lowerX, upperX, lowerY and upperY which define a rectangle constraining pixel modifications.

@@ -11,8 +11,8 @@
 class hexAscii
 {
 public:
-    static void hexStringToBinaryArray(const char *aHexString, uint8_t *aBinaryArray);                              // convert HEX-ASCII string to binary array
-    static void binaryArrayToHexString(const uint8_t *aBinaryArray, uint32_t aBinaryArrayLength, char *aHexString); // convert binary array to HEX-ASCII string
+    static void hexStringToByteArray(const char *aHexString, uint8_t *aBinaryArray);                              // convert HEX-ASCII string to binary array
+    static void byteArrayToHexString(const uint8_t *aBinaryArray, uint32_t aBinaryArrayLength, char *aHexString); // convert binary array to HEX-ASCII string
 
 #ifndef unitTesting
 

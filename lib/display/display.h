@@ -6,6 +6,7 @@
 
 #pragma once
 #include <stdint.h>
+#include "updatemode.h"
 
 enum class displayRotation : uint32_t {        // rotation is clockwise
     rotation0,
@@ -23,27 +24,28 @@ enum class displayMirroring : uint32_t {
 
 class display {
   public:
-    static void initialize();                                           // wakeup through HW reset, then configure display
-    static void goSleep();                                              //
-    void set();                                                         // write displayBuffer to display
-    void clear();                                                       // write blank data to display
-    void show();                                                        // refresh display
+    static void initialize();               // wakeup through HW reset, then configure display
+    static void goSleep();                  //
+    void set();                             // write displayBuffer to display
+    void clear();                           // write blank data to display
+    void update(updateMode theMode);        // refresh display
 
     static void setPixel(uint32_t x, uint32_t y);                       // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void clearPixel(uint32_t x, uint32_t y);                     // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void changePixel(uint32_t x, uint32_t y, bool onOff);        // takes into account the rotation and mirroring settings, so clients don't have to worry about this
 
-    static void clearAllPixels();                                       // sets complete displayBuffer to zeroes
+    static void clearAllPixels();        // sets complete displayBuffer to zeroes
 
-    static constexpr uint32_t width{200};                               // [pixels]
-    static constexpr uint32_t height{200};                              // [pixels]
+    static constexpr uint32_t widthInPixels{200};                     // [pixels]
+    static constexpr uint32_t heightInPixels{200};                    // [pixels]
+    static constexpr uint32_t widthInBytes{widthInPixels / 8};        // [bytes]
 
 #ifndef unitTesting
 
   private:
 #endif
 
-    static constexpr uint32_t bufferSize{width * height / 8};        // 1 bit per pixel
+    static constexpr uint32_t bufferSize{widthInPixels * heightInPixels / 8};        // 1 bit per pixel
     static uint8_t displayBuffer[bufferSize];
 
     enum class SSD1681Commands : uint8_t {
@@ -58,6 +60,7 @@ class display {
         DISPLAY_UPDATE_CONTROL_1             = 0x21,
         DISPLAY_UPDATE_CONTROL_2             = 0x22,
         WRITE_RAM                            = 0x24,
+        WRITE_RAM_2                          = 0x26, // undocumented, reverse engineered from example code
         WRITE_VCOM_REGISTER                  = 0x2C,
         WRITE_LUT_REGISTER                   = 0x32,
         SET_DUMMY_LINE_PERIOD                = 0x3A,

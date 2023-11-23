@@ -24,19 +24,19 @@ void test_drawPixel() {
     graphics::drawPixel(0, 0, graphics::color::white);
     TEST_ASSERT_EQUAL(0, display::displayBuffer[0]);
 
-    graphics::drawPixel((display::width - 1), 0, graphics::color::black);
+    graphics::drawPixel((display::widthInPixels - 1), 0, graphics::color::black);
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[24]);
-    graphics::drawPixel((display::width - 1), 0, graphics::color::white);
+    graphics::drawPixel((display::widthInPixels - 1), 0, graphics::color::white);
     TEST_ASSERT_EQUAL(0, display::displayBuffer[24]);
 
-    graphics::drawPixel(0, (display::height - 1), graphics::color::black);
+    graphics::drawPixel(0, (display::heightInPixels - 1), graphics::color::black);
     TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[4999 - 24]);
-    graphics::drawPixel(0, (display::height - 1), graphics::color::white);
+    graphics::drawPixel(0, (display::heightInPixels - 1), graphics::color::white);
     TEST_ASSERT_EQUAL(0, display::displayBuffer[4999 - 24]);
 
-    graphics::drawPixel((display::width - 1), (display::height - 1), graphics::color::black);
+    graphics::drawPixel((display::widthInPixels - 1), (display::heightInPixels - 1), graphics::color::black);
     TEST_ASSERT_EQUAL(0b00000001, display::displayBuffer[4999]);
-    graphics::drawPixel((display::width - 1), (display::height - 1), graphics::color::white);
+    graphics::drawPixel((display::widthInPixels - 1), (display::heightInPixels - 1), graphics::color::white);
     TEST_ASSERT_EQUAL(0, display::displayBuffer[4999]);
 }
 
@@ -45,7 +45,7 @@ void test_drawHorizontalLine() {
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
 
-    graphics::drawHorizontalLine(0, display::width - 1, 0, graphics::color::black);
+    graphics::drawHorizontalLine(0, display::widthInPixels - 1, 0, graphics::color::black);
     for (auto i = 0; i < 25; i++) {
         TEST_ASSERT_EQUAL(0xFF, display::displayBuffer[i]);
     }
@@ -53,7 +53,7 @@ void test_drawHorizontalLine() {
         TEST_ASSERT_EQUAL(0x00, display::displayBuffer[i]);
     }
     display::clearAllPixels();
-    graphics::drawHorizontalLine(display::width - 1, 0, 0, graphics::color::black);
+    graphics::drawHorizontalLine(display::widthInPixels - 1, 0, 0, graphics::color::black);
     for (auto i = 0; i < 25; i++) {
         TEST_ASSERT_EQUAL(0xFF, display::displayBuffer[i]);
     }
@@ -67,13 +67,13 @@ void test_drawVerticalLine() {
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
 
-    graphics::drawVerticalLine(0, 0, display::height - 1, graphics::color::black);
+    graphics::drawVerticalLine(0, 0, display::heightInPixels - 1, graphics::color::black);
     for (auto i = 0; i < 200; i++) {
         TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[i * 25]);
     }
     display::clearAllPixels();
 
-    graphics::drawVerticalLine(0, display::height - 1, 0, graphics::color::black);
+    graphics::drawVerticalLine(0, display::heightInPixels - 1, 0, graphics::color::black);
     for (auto i = 0; i < 200; i++) {
         TEST_ASSERT_EQUAL(0b10000000, display::displayBuffer[i * 25]);
     }
@@ -83,7 +83,7 @@ void test_drawRectangle() {
     display::clearAllPixels();
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
-    graphics::drawRectangle(0, 0, display::width - 1, display::height - 1, graphics::color::black);
+    graphics::drawRectangle(0, 0, display::widthInPixels - 1, display::heightInPixels - 1, graphics::color::black);
     for (auto i = 0; i < 25; i++) {
         TEST_ASSERT_EQUAL(0xFF, display::displayBuffer[i]);
     }
@@ -102,7 +102,7 @@ void test_drawFilledRectangle() {
     display::clearAllPixels();
     display::mirroring = displayMirroring::none;
     display::rotation  = displayRotation::rotation0;
-    graphics::drawFilledRectangle(0, 0, display::width - 1, 7, graphics::color::black);
+    graphics::drawFilledRectangle(0, 0, display::widthInPixels - 1, 7, graphics::color::black);
     for (auto i = 0; i < (25 * 8); i++) {
         TEST_ASSERT_EQUAL(0xFF, display::displayBuffer[i]);
     }
