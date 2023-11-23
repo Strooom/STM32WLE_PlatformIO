@@ -7,6 +7,9 @@
 
 #pragma once
 #include <stdint.h>
+#ifndef generic
+#include "main.h"        // required for PRIMASK
+#endif
 
 // This is a circular buffer template, so it works FIFO
 // push() on an already full buffer, overwrites the oldest event.
@@ -36,9 +39,9 @@ class circularBuffer {
             head = (head + 1) % bufferLength;
         }
 #ifndef generic
-       if (interrupts_enabled) {
-           __enable_irq();
-       }
+        if (interrupts_enabled) {
+            __enable_irq();
+        }
 #endif
     };
 
@@ -56,9 +59,9 @@ class circularBuffer {
             result = static_cast<itemType>(0x00);
         }
 #ifndef generic
-      if (interrupts_enabled) {
-           __enable_irq();
-       }
+        if (interrupts_enabled) {
+            __enable_irq();
+        }
 #endif
         return result;
     };

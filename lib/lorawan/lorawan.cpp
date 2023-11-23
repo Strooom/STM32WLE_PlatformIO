@@ -1,8 +1,5 @@
 #include <iostream>
 #include "lorawan.h"
-#include "AES-128.h"        // temporary, until I have my own AES implementation
-#include "Encrypt.h"        // temporary, until I have my own AES implementation
-#include "Struct.h"         // temporary, until I have my own AES implementation
 #include "sx126x.h"
 #include "logging.h"
 #include "circularbuffer.h"
@@ -237,10 +234,10 @@ void LoRaWAN::goTo(txRxCycleState newState) {
             break;
 
         case txRxCycleState::waitForRandomTimeBeforeTransmit: {
-            uint32_t randomDelayAsTicks = getRandomNumber() % maxRandomDelayBeforeTx;                                                                                         // this results in a random delay of 0.. 8 seconds
-            float randomDelayAsFloat    = static_cast<float>(randomDelayAsTicks) / 2048.0f;                                                                                   // convert to seconds
+            uint32_t randomDelayAsTicks = getRandomNumber() % maxRandomDelayBeforeTx;                                                                                          // this results in a random delay of 0.. 8 seconds
+            float randomDelayAsFloat    = static_cast<float>(randomDelayAsTicks) / 2048.0f;                                                                                    // convert to seconds
             logging::snprintf(logging::source::lorawanTiming, "LoRaWAN random delay before transmit : %u ticks, %f seconds\n", randomDelayAsTicks, randomDelayAsFloat);        //
-            startTimer(randomDelayAsTicks);                                                                                                                                   //
+            startTimer(randomDelayAsTicks);                                                                                                                                    //
         } break;
 
         case txRxCycleState::waitForTxComplete:
@@ -298,7 +295,7 @@ void LoRaWAN::prepareBlockAi(uint8_t* theBlock, linkDirection theDirection, devi
 }
 
 void LoRaWAN::encryptPayload(aesKey& theKey) {
-    uint32_t nmbrOfBlocks{framePayloadLength / 16};                 // Split payload in blocks of 16 bytes, last part could be less than 16 bytes - integer division
+    uint32_t nmbrOfBlocks{framePayloadLength / 16};        // Split payload in blocks of 16 bytes, last part could be less than 16 bytes - integer division
 
     bool hasIncompleteBlock{(framePayloadLength % 16) != 0};        // Check if last block is incomplete
     uint32_t incompleteBlockSize{0};
@@ -327,7 +324,7 @@ void LoRaWAN::encryptPayload(aesKey& theKey) {
 }
 
 void LoRaWAN::decryptPayload(aesKey& theKey) {
-    uint32_t nmbrOfBlocks{framePayloadLength / 16};                 // Split payload in blocks of 16 bytes, last part could be less than 16 bytes - integer division
+    uint32_t nmbrOfBlocks{framePayloadLength / 16};        // Split payload in blocks of 16 bytes, last part could be less than 16 bytes - integer division
 
     bool hasIncompleteBlock{(framePayloadLength % 16) != 0};        // Check if last block is incomplete
     uint32_t incompleteBlockSize{0};
@@ -406,9 +403,9 @@ void LoRaWAN::insertBlockB0(linkDirection theDirection, deviceAddress& aDeviceAd
 
 void LoRaWAN::insertMic() {
     uint8_t result[16]{0};
-    sBuffer sourceData;
-    sourceData.Data    = rawMessage;
-    sourceData.Counter = b0BlockLength + macHeaderLength + macPayloadLength;
+    // sBuffer sourceData; // TODO : reactivate
+    // sourceData.Data    = rawMessage;
+    // sourceData.Counter = b0BlockLength + macHeaderLength + macPayloadLength;
 
     // Calculate_MIC2(&sourceData, networkKey.asBytes(), result); // TODO
     rawMessage[micOffset]     = result[0];        // LSByte
@@ -419,9 +416,9 @@ void LoRaWAN::insertMic() {
 
 bool LoRaWAN::isValidMic() {
     uint8_t result[16]{0};
-    sBuffer sourceData;
-    sourceData.Data    = rawMessage;
-    sourceData.Counter = b0BlockLength + macHeaderLength + macPayloadLength;
+    // sBuffer sourceData;
+    /// sourceData.Data    = rawMessage;
+    // sourceData.Counter = b0BlockLength + macHeaderLength + macPayloadLength;
 
     // Calculate_MIC2(&sourceData, networkKey.asBytes(), result); // TODO
     if (rawMessage[micOffset] != result[0]) {
@@ -446,8 +443,8 @@ void LoRaWAN::sendUplink(framePort theFramePort, const uint8_t applicationData[]
     }
 
     // Wake the radio up..
-    theRadio.initializeInterface(); // does HAL_SUBGHZ_Init
-    theRadio.initializeRadio(); // writes all config registers.. should not be needed if config is retained
+    theRadio.initializeInterface();        // does HAL_SUBGHZ_Init
+    theRadio.initializeRadio();            // writes all config registers.. should not be needed if config is retained
 
     if (theFramePort == 0) {
         // uplink message with framePort 0, containing no frameOptions and framePayload is all MAC stuff, encrypted with networkKey
@@ -483,9 +480,9 @@ void LoRaWAN::sendUplink(framePort theFramePort, const uint8_t applicationData[]
     goTo(txRxCycleState::waitForRandomTimeBeforeTransmit);
 
     // 3. txRxCycle is started..
-    uplinkFrameCount.increment();                                                                                      //
-//    nonVolatileStorage::write(static_cast<uint32_t>(nvsMap::blockIndex::uplinkFrameCounter), uplinkFrameCount.asUint32);        // TODO : update the setting/context and let the NVS do things under the hood
-    removeNonStickyMacStuff();                                                                                         //
+    uplinkFrameCount.increment();        //
+                                         //    nonVolatileStorage::write(static_cast<uint32_t>(nvsMap::blockIndex::uplinkFrameCounter), uplinkFrameCount.asUint32);        // TODO : update the setting/context and let the NVS do things under the hood
+    removeNonStickyMacStuff();           //
 }
 
 void LoRaWAN::getDownlinkMessage() {
@@ -653,35 +650,35 @@ void LoRaWAN::processMacContents() {
 
         switch (theMacCommand) {
             case macCommand::linkCheckAnswer: {
-                constexpr uint32_t linkCheckAnswerLength{3};                                                                                       // 3 bytes : commandId, margin, GwCnt
-                uint8_t margin       = macIn[1];                                                                                                   // margin : [0..254] = value in dB above the demodulation floor -> the higher the better,  margin [255] = reserved
-                uint8_t gatewayCount = macIn[2];                                                                                                   // GwCnt : number of gateways that successfully received the last uplink
-                macIn.consume(linkCheckAnswerLength);                                                                                              // consume all bytes
+                constexpr uint32_t linkCheckAnswerLength{3};                                                                                        // 3 bytes : commandId, margin, GwCnt
+                uint8_t margin       = macIn[1];                                                                                                    // margin : [0..254] = value in dB above the demodulation floor -> the higher the better,  margin [255] = reserved
+                uint8_t gatewayCount = macIn[2];                                                                                                    // GwCnt : number of gateways that successfully received the last uplink
+                macIn.consume(linkCheckAnswerLength);                                                                                               // consume all bytes
                 logging::snprintf(logging::source::lorawanMac, "LinkCheckAnswer : margin = %d, gatewayCount = %d \n", margin, gatewayCount);        // TODO : For the time being, we just show this info in the logging. Later we could use it to show the quality of the link on the display
             } break;
 
             case macCommand::linkAdaptiveDataRateRequest: {
-                constexpr uint32_t linkAdaptiveDataRateRequestLength{5};                                                                                              // 5 bytes : commandId, dataRate_txPower[1], chMask[2], redundancy[1]
-                uint8_t dataRateTxPower = macIn[1];                                                                                                                   // dataRate : [0..15] = the data rate used for the last transmission, txPower : [0..15] = the TX power used for the last transmission
-                uint16_t chMask         = (static_cast<uint16_t>(macIn[2]) | static_cast<uint16_t>(macIn[3] << 8));                                                   // ChMask : [0..15] = the channel mask used for the last transmission
-                uint8_t redundancy      = macIn[4];                                                                                                                   // Redundancy : [0..15] = the redundancy used for the last transmission
-                macIn.consume(linkAdaptiveDataRateRequestLength);                                                                                                     // consume 5 bytes : id, dataRate_txPower[1], chMask[2], redundancy[1]
+                constexpr uint32_t linkAdaptiveDataRateRequestLength{5};                                                                                               // 5 bytes : commandId, dataRate_txPower[1], chMask[2], redundancy[1]
+                uint8_t dataRateTxPower = macIn[1];                                                                                                                    // dataRate : [0..15] = the data rate used for the last transmission, txPower : [0..15] = the TX power used for the last transmission
+                uint16_t chMask         = (static_cast<uint16_t>(macIn[2]) | static_cast<uint16_t>(macIn[3] << 8));                                                    // ChMask : [0..15] = the channel mask used for the last transmission
+                uint8_t redundancy      = macIn[4];                                                                                                                    // Redundancy : [0..15] = the redundancy used for the last transmission
+                macIn.consume(linkAdaptiveDataRateRequestLength);                                                                                                      // consume 5 bytes : id, dataRate_txPower[1], chMask[2], redundancy[1]
                 logging::snprintf(logging::source::lorawanMac, "LinkAdaptiveDataRateRequest : 0x%02X, 0x%04X, 0x%02X \n", dataRateTxPower, chMask, redundancy);        //
 
                 // TODO : currently I don't understand the purpose of this mac command, so I just ignore it. Maybe it's more useful in US-915 than EU-868
 
-                constexpr uint32_t linkAdaptiveDataRateAnswerLength{2};                                                    // 2 bytes : commandId, status
-                uint8_t answer[linkAdaptiveDataRateAnswerLength];                                                          //
-                answer[0] = static_cast<uint8_t>(macCommand::linkAdaptiveDataRateAnswer);                                  //
-                answer[1] = static_cast<uint8_t>(0);                                                                       // TODO : For the time being we just reject this stupid mac command
-                macOut.append(answer, linkAdaptiveDataRateAnswerLength);                                                   //
+                constexpr uint32_t linkAdaptiveDataRateAnswerLength{2};                                                     // 2 bytes : commandId, status
+                uint8_t answer[linkAdaptiveDataRateAnswerLength];                                                           //
+                answer[0] = static_cast<uint8_t>(macCommand::linkAdaptiveDataRateAnswer);                                   //
+                answer[1] = static_cast<uint8_t>(0);                                                                        // TODO : For the time being we just reject this stupid mac command
+                macOut.append(answer, linkAdaptiveDataRateAnswerLength);                                                    //
                 logging::snprintf(logging::source::lorawanMac, "linkAdaptiveDataRateAnswer : 0x%02X \n", answer[1]);        //
             } break;
 
             case macCommand::dutyCycleRequest: {
-                constexpr uint32_t dutyCycleRequestLength{2};                                                    // 2 bytes : commandId, dutyCycle
-                uint8_t dutyCycle = macIn[1];                                                                    //
-                macIn.consume(dutyCycleRequestLength);                                                           //
+                constexpr uint32_t dutyCycleRequestLength{2};                                                     // 2 bytes : commandId, dutyCycle
+                uint8_t dutyCycle = macIn[1];                                                                     //
+                macIn.consume(dutyCycleRequestLength);                                                            //
                 logging::snprintf(logging::source::lorawanMac, "DutyCycleRequest : 0x%02X \n", dutyCycle);        //
 
                 // TODO : until we implement dutyCycle management, we ignore this command
@@ -694,11 +691,11 @@ void LoRaWAN::processMacContents() {
             } break;
 
             case macCommand::deviceStatusRequest: {
-                constexpr uint32_t deviceStatusRequestLength{1};                                // 1 byte : commandId
-                macIn.consume(deviceStatusRequestLength);                                       // consume 1 byte
+                constexpr uint32_t deviceStatusRequestLength{1};                                 // 1 byte : commandId
+                macIn.consume(deviceStatusRequestLength);                                        // consume 1 byte
                 logging::snprintf(logging::source::lorawanMac, "DeviceStatusRequest \n");        //
 
-                constexpr uint32_t deviceStatusAnswerLength{3};                                 // 3 bytes : commandId, batteryLevel, margin
+                constexpr uint32_t deviceStatusAnswerLength{3};        // 3 bytes : commandId, batteryLevel, margin
                 uint8_t answer[deviceStatusAnswerLength];
                 answer[0] = static_cast<uint8_t>(macCommand::deviceStatusAnswer);
                 answer[1] = static_cast<uint8_t>(255);        // The end-device was not able to measure the battery level
@@ -714,13 +711,13 @@ void LoRaWAN::processMacContents() {
                 uint32_t minimumDataRate = macIn[5] & 0x0F;                                                                                                                   //
                 uint32_t maximumDataRate = (macIn[5] & 0xF0) >> 4;
                 processNewChannelRequest(channelIndex, frequency, minimumDataRate, maximumDataRate);
-                macIn.consume(newChannelRequestLength);                                                          //
+                macIn.consume(newChannelRequestLength);        //
 
-                constexpr uint32_t newChannelAnswerLength{2};                                                    // 2 bytes : commandId, status
-                uint8_t answer[newChannelAnswerLength];                                                          //
-                answer[0] = static_cast<uint8_t>(macCommand::newChannelAnswer);                                  //
-                answer[1] = static_cast<uint8_t>(0b00000011);                                                    // The end-device accepts datarange and frequency
-                macOut.append(answer, newChannelAnswerLength);                                                   //
+                constexpr uint32_t newChannelAnswerLength{2};                                                     // 2 bytes : commandId, status
+                uint8_t answer[newChannelAnswerLength];                                                           //
+                answer[0] = static_cast<uint8_t>(macCommand::newChannelAnswer);                                   //
+                answer[1] = static_cast<uint8_t>(0b00000011);                                                     // The end-device accepts datarange and frequency
+                macOut.append(answer, newChannelAnswerLength);                                                    //
                 logging::snprintf(logging::source::lorawanMac, "NewChannelAnswer : 0x%02X \n", answer[1]);        //
             } break;
 
@@ -729,23 +726,23 @@ void LoRaWAN::processMacContents() {
                 uint8_t downLinkSettings = macIn[1];                                                                                                                          //
                 uint32_t frequency       = (static_cast<uint32_t>(macIn[2]) + (static_cast<uint32_t>(macIn[3]) << 8) + (static_cast<uint32_t>(macIn[4]) << 16)) * 100;        //
                 macIn.consume(receiveParameterSetupRequestLength);                                                                                                            //
-                logging::snprintf(logging::source::lorawanMac, "ReceiveParameterSetupRequest : 0x%02X, %u \n", downLinkSettings, frequency);                                   //
+                logging::snprintf(logging::source::lorawanMac, "ReceiveParameterSetupRequest : 0x%02X, %u \n", downLinkSettings, frequency);                                  //
 
-                constexpr uint32_t receiveParameterSetupAnswerLength{2};                                                                                                      // 2 bytes : commandId, status
-                uint8_t answer[receiveParameterSetupAnswerLength];                                                                                                            //
-                answer[0] = static_cast<uint8_t>(macCommand::receiveParameterSetupAnswer);                                                                                    //
-                answer[1] = static_cast<uint8_t>(0b00000111);                                                                                                                 // The end-device accepts the new settings
-                macOut.append(answer, receiveParameterSetupAnswerLength);                                                                                                     //
-                logging::snprintf(logging::source::lorawanMac, "ReceiveParameterSetupAnswer : 0x%02X \n", answer[1]);                                                          //
+                constexpr uint32_t receiveParameterSetupAnswerLength{2};                                                     // 2 bytes : commandId, status
+                uint8_t answer[receiveParameterSetupAnswerLength];                                                           //
+                answer[0] = static_cast<uint8_t>(macCommand::receiveParameterSetupAnswer);                                   //
+                answer[1] = static_cast<uint8_t>(0b00000111);                                                                // The end-device accepts the new settings
+                macOut.append(answer, receiveParameterSetupAnswerLength);                                                    //
+                logging::snprintf(logging::source::lorawanMac, "ReceiveParameterSetupAnswer : 0x%02X \n", answer[1]);        //
             } break;
 
             case macCommand::receiveTimingSetupRequest: {
                 constexpr uint32_t receiveTimingSetupRequestLength{2};        // 2 bytes : commandId, delay
                 uint32_t receivedRx1Delay = macIn[1] & 0x0F;                  // TODO : a value of 0 means also 1 second
                 processReceiveTimingSetupRequest(receivedRx1Delay);
-                macIn.consume(receiveTimingSetupRequestLength);               //
+                macIn.consume(receiveTimingSetupRequestLength);        //
 
-                constexpr uint32_t receiveTimingSetupAnswerLength{1};         // 1 byte : commandId
+                constexpr uint32_t receiveTimingSetupAnswerLength{1};        // 1 byte : commandId
                 uint8_t answer[receiveTimingSetupAnswerLength];
                 answer[0] = static_cast<uint8_t>(macCommand::receiveTimingSetupAnswer);
                 macOut.append(answer, receiveTimingSetupAnswerLength);
@@ -877,7 +874,7 @@ void LoRaWAN::processNewChannelRequest(uint32_t channelIndex, uint32_t frequency
 
 void LoRaWAN::processReceiveTimingSetupRequest(uint32_t receivedRx1Delay) {
     if (receivedRx1Delay == 0) {
-        receivedRx1Delay = 1;                                                                                                                         // a value of 0, also results in a delay of 1 second. Link Layer Spec V1.0.4, line 1237
+        receivedRx1Delay = 1;        // a value of 0, also results in a delay of 1 second. Link Layer Spec V1.0.4, line 1237
     }
     logging::snprintf(logging::source::lorawanMac, "ReceiveTimingSetupRequest : rx1Delay changed from %u to %u\n", rx1Delay, receivedRx1Delay);        //
     rx1Delay = receivedRx1Delay;

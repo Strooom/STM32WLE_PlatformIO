@@ -80,13 +80,13 @@ void aesBlock::encrypt(aesKey &key) {
 }
 
 void aesBlock::substituteBytes() {
-    for (auto index = 0; index < lengthAsBytes; index++) {
+    for (uint32_t index = 0; index < lengthAsBytes; index++) {
         state.asByte[index] = sbox::data[state.asByte[index]];
     }
 }
 
 void aesBlock::XOR(const uint8_t *data) {
-    for (auto index = 0; index < lengthAsBytes; index++) {
+    for (uint32_t index = 0; index < lengthAsBytes; index++) {
         state.asByte[index] = state.asByte[index] ^= data[index];
     }
 }
