@@ -175,11 +175,11 @@ jobs:
           path: temp/framework-stm32cubewl
           submodules: true
       
-      - name: List directory contents
-        run: |
-          ls -al /home/runner/.platformio
-          ls -al /home/runner/.platformio/packages
-          ls -al /home/runner/.platformio/platforms/ststm32
+      # - name: List directory contents
+      #   run: |
+      #     ls -al /home/runner/.platformio
+      #     ls -al /home/runner/.platformio/packages
+      #     ls -al /home/runner/.platformio/platforms/ststm32
 
       - name: Add stm32wle to PlatformIO platforms
         run: |
