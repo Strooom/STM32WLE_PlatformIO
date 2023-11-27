@@ -300,7 +300,7 @@
       "type": "framework",
       "optional": true,
       "owner": "platformio",
-      "version": "symlink:/home/runner/.platformio/packages/framework-stm32cubewl"
+      "version": "/home/runner/.platformio/packages/framework-stm32cubewl"
     },
     "framework-zephyr": {
       "type": "framework",
