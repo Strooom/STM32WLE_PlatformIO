@@ -25,11 +25,6 @@ jobs:
       buildversionfilename: ${{ steps.selectversion.outputs.buildversionfilename }}
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: Enable caching
         uses: actions/cache@v3
         with:
@@ -37,6 +32,11 @@ jobs:
             ~/.cache/pip
             ~/.platformio/.cache
           key: ${{ runner.os }}-pio
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version data
         id: versioninfo
@@ -169,6 +169,12 @@ jobs:
       - name: Check PlatformIO
         run: |
           pio system info
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: home/runner/.platformio/packages/framework-stm32cubewl
+          submodules: true
 
       - name: Run all generic unit tests
         run: |
