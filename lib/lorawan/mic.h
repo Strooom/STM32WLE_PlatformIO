@@ -7,8 +7,8 @@
 
 #pragma once
 #include <stdint.h>
-
 #include "aeskey.h"
+#include "aesblock.h"
 
 class messageIntegrityCode {
   public:

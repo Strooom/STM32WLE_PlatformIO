@@ -1,28 +1,7 @@
-/* USER CODE BEGIN Header */
-/**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2023 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "utilities_conf.h"
 // #include "app_subghz_phy.h" change here for recompile
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include <stdio.h>        // for snprintf()...
 #include "logging.h"
@@ -55,15 +34,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 
-nonVolatileStorage nvs;
 circularBuffer<loRaWanEvent, 16U> loraWanEventBuffer;
 circularBuffer<applicationEvent, 16U> applicationEventBuffer;
-sx126x theRadio;
-LoRaWAN loraNetwork;
-mainController theMainController;
-cli theCli;
-sensorChannelCollection theSensors;
-measurementCollection theMeasurements;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -127,7 +99,7 @@ int main(void) {
 
     // nvs.initializeOnce(false);        // set true to factory reset a device by overwriting all settings in EEPROM
 
-    theMainController.initialize();
+    mainController::initialize();
 
     while (1) {
         // Detect removal or insertion of USB cable/power
@@ -144,17 +116,17 @@ int main(void) {
             // theCli.handleEvents();
         }
 
-        // loraNetwork.run(); // Not essential fttb. This will send a port 0 message when the macOut contains more than 15 bytes
+        // LoRaWAN::run(); // Not essential fttb. This will send a port 0 message when the macOut contains more than 15 bytes
 
-        loraNetwork.handleEvents();
-        theMainController.handleEvents();
+        LoRaWAN::handleEvents();
+        mainController::handleEvents();
 
         if (!power::hasUsbPower()) {        // When no external USB power, go into sleep
             gpio::disableGpio(gpio::group::usbPresent);
             HAL_I2C_DeInit(&hi2c2);
             UTILS_ENTER_CRITICAL_SECTION();        // mask interrupts
 
-            if (loraNetwork.theTxRxCycleState == txRxCycleState::idle) {                       // If the LoRaWAN stack is idle...
+            if (LoRaWAN::theTxRxCycleState == txRxCycleState::idle) {                       // If the LoRaWAN stack is idle...
                 if (applicationEventBuffer.isEmpty() && loraWanEventBuffer.isEmpty()) {        // If no events are pending in any of the eventBuffers...
                     logging::snprintf("goSleep...\n");                                         //
                     HAL_SuspendTick();                                                         // stop Systick

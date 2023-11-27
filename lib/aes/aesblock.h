@@ -14,9 +14,11 @@ class aesBlock {
     static constexpr uint32_t lengthAsBytes{16};         //
     static constexpr uint32_t lengthAsWords{4};          //
     void set(const uint8_t bytes[lengthAsBytes]);        // load the block with data
-    void encrypt(aesKey &key);                           // encrypt the block
-    const uint8_t *asBytes();                            // return the encrypted block as bytes
-    const uint32_t *asWords();                           // return the encrypted block as words
+    uint8_t &operator[](std::size_t index); // accessing the individual bytes through the [] operator
+
+    void encrypt(aesKey &key);        // encrypt the block
+    const uint8_t *asBytes();         // return the encrypted block as bytes
+    const uint32_t *asWords();        // return the encrypted block as words
     static void matrixToVector(uint8_t matrixIn[4][4], uint8_t vectorOut[16]);
     static void vectorToMatrix(uint8_t vectorIn[16], uint8_t matrixOut[4][4]);
     static void bytesToWords(uint8_t bytesIn[16], uint32_t wordsOut[4]);

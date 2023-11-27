@@ -8,7 +8,42 @@
 #include "applicationevent.h"
 #include "maccommand.h"
 
-extern sx126x theRadio;
+#include "aesblock.h"
+
+// instantiate and initialize the static members
+
+deviceAddress LoRaWAN::DevAddr;
+aesKey LoRaWAN::applicationKey;
+aesKey LoRaWAN::networkKey;
+frameCount LoRaWAN::uplinkFrameCount;
+frameCount LoRaWAN::downlinkFrameCount;
+
+// dutyCycle theDutyCycle;
+//  messageIntegrityCode mic;
+
+dataRates LoRaWAN::theDataRates;
+uint32_t LoRaWAN::currentDataRateIndex{0};
+loRaChannelCollection LoRaWAN::theChannels;
+uint32_t LoRaWAN::rx1Delay{1};        // in [seconds]
+
+uint8_t LoRaWAN::rawMessage[maxLoRaPayloadLength + b0BlockLength]{};
+
+uint32_t LoRaWAN::macPayloadLength{0};
+uint32_t LoRaWAN::framePortLength{1};
+uint32_t LoRaWAN::frameOptionsLength{0};
+uint32_t LoRaWAN::frameHeaderLength{0};
+uint32_t LoRaWAN::framePayloadLength{0};
+uint32_t LoRaWAN::loRaPayloadLength{0};
+
+uint32_t LoRaWAN::framePortOffset{};
+uint32_t LoRaWAN::framePayloadOffset{};
+uint32_t LoRaWAN::micOffset{};
+
+linearBuffer<64> LoRaWAN::macIn;         // buffer holding the received MAC requests and/or answers
+linearBuffer<64> LoRaWAN::macOut;        // buffer holding the MAC requests and/or answers to be sent
+
+// global objects & variables
+
 extern circularBuffer<loRaWanEvent, 16U> loraWanEventBuffer;
 extern circularBuffer<applicationEvent, 16U> applicationEventBuffer;
 
@@ -18,11 +53,12 @@ void LoRaWAN::initialize() {
     // Read the LoRaWAN settings from non-volatile storage
 
     DevAddr.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::DevAddr));
-    // uint8_t tmpKeyArray[aesKey::binaryKeyLength];
-    // nvs.readBlock(static_cast<uint32_t>(nvsMap::blockIndex::applicationSessionKey), tmpKeyArray);
-    // applicationKey.setFromBinary(tmpKeyArray);
-    // nvs.readBlock(static_cast<uint32_t>(nvsMap::blockIndex::networkSessionKey), tmpKeyArray);
-    // networkKey.setFromBinary(tmpKeyArray);
+
+    uint8_t tmpKeyArray[aesKey::lengthAsBytes];
+    settingsCollection::read(settingsCollection::settingIndex::applicationSessionKey, tmpKeyArray);
+    applicationKey.set(tmpKeyArray);
+    settingsCollection::read(settingsCollection::settingIndex::networkSessionKey, tmpKeyArray);
+    networkKey.set(tmpKeyArray);
 
     uplinkFrameCount.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::uplinkFrameCounter));
     downlinkFrameCount.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::downlinkFrameCounter));
@@ -31,7 +67,7 @@ void LoRaWAN::initialize() {
     logSettings();
     logState();
 
-    theRadio.initialize();
+    sx126x::initialize();
 }
 
 void LoRaWAN::run() {
@@ -65,7 +101,7 @@ void LoRaWAN::handleEvents() {
             case txRxCycleState::waitForRandomTimeBeforeTransmit:
                 switch (theEvent) {
                     case loRaWanEvent::timeOut:
-                        theRadio.startTransmit(128000U);
+                        sx126x::startTransmit(128000U);
                         goTo(txRxCycleState::waitForTxComplete);
                         break;
                     default:
@@ -103,8 +139,8 @@ void LoRaWAN::handleEvents() {
                         startTimer(2048U);        // 1 second from now until Rx2Start
                         uint32_t rxFrequency = theChannels.txRxChannels[theChannels.getCurrentChannelIndex()].frequency;
                         uint32_t rxTimeout   = getReceiveTimeout(theDataRates.theDataRates[currentDataRateIndex].theSpreadingFactor);
-                        theRadio.configForReceive(theDataRates.theDataRates[currentDataRateIndex].theSpreadingFactor, rxFrequency);
-                        theRadio.startReceive(rxTimeout);
+                        sx126x::configForReceive(theDataRates.theDataRates[currentDataRateIndex].theSpreadingFactor, rxFrequency);
+                        sx126x::startReceive(rxTimeout);
                         goTo(txRxCycleState::waitForRx1CompleteOrTimeout);
                     } break;
                     default:
@@ -152,8 +188,8 @@ void LoRaWAN::handleEvents() {
                         stopTimer();
                         uint32_t rxFrequency = theChannels.rx2Channel.frequency;
                         uint32_t rxTimeout   = getReceiveTimeout(spreadingFactor::SF9);
-                        theRadio.configForReceive(spreadingFactor::SF9, rxFrequency);
-                        theRadio.startReceive(rxTimeout);
+                        sx126x::configForReceive(spreadingFactor::SF9, rxFrequency);
+                        sx126x::startReceive(rxTimeout);
                         goTo(txRxCycleState::waitForRx2CompleteOrTimeout);
                     } break;
                     default:
@@ -230,7 +266,7 @@ void LoRaWAN::goTo(txRxCycleState newState) {
     theTxRxCycleState = newState;
     switch (newState) {
         case txRxCycleState::idle:
-            theRadio.goSleep(sx126x::sleepMode::warmStart);
+            sx126x::goSleep(sx126x::sleepMode::warmStart);
             break;
 
         case txRxCycleState::waitForRandomTimeBeforeTransmit: {
@@ -294,6 +330,32 @@ void LoRaWAN::prepareBlockAi(uint8_t* theBlock, linkDirection theDirection, devi
     theBlock[15] = blockIndex;                                // Blocks Ai are indexed from 1..k, where k is the number of blocks
 }
 
+void LoRaWAN::prepareBlockAi(aesBlock& theBlock, linkDirection theDirection, deviceAddress& anAddress, frameCount& aFrameCounter, uint32_t blockIndex) {
+    theBlock[0] = 0x01;
+    theBlock[1] = 0x00;
+    theBlock[2] = 0x00;
+    theBlock[3] = 0x00;
+    theBlock[4] = 0x00;
+    theBlock[5] = static_cast<uint8_t>(theDirection);
+    theBlock[6] = DevAddr.asUint8[0];        // LSByte
+    theBlock[7] = DevAddr.asUint8[1];        //
+    theBlock[8] = DevAddr.asUint8[2];        //
+    theBlock[9] = DevAddr.asUint8[3];        // MSByte
+    if (theDirection == linkDirection::uplink) {
+        theBlock[10] = uplinkFrameCount.asUint8[0];        // LSByte
+        theBlock[11] = uplinkFrameCount.asUint8[1];        //
+        theBlock[12] = uplinkFrameCount.asUint8[2];        //
+        theBlock[13] = uplinkFrameCount.asUint8[3];        // MSByte
+    } else {
+        theBlock[10] = downlinkFrameCount.asUint8[0];        // LSByte
+        theBlock[11] = downlinkFrameCount.asUint8[1];        //
+        theBlock[12] = downlinkFrameCount.asUint8[2];        //
+        theBlock[13] = downlinkFrameCount.asUint8[3];        // MSByte
+    }
+    theBlock[14] = 0x00;
+    theBlock[15] = blockIndex;        // Blocks Ai are indexed from 1..k, where k is the number of blocks
+}
+
 void LoRaWAN::encryptPayload(aesKey& theKey) {
     uint32_t nmbrOfBlocks{framePayloadLength / 16};        // Split payload in blocks of 16 bytes, last part could be less than 16 bytes - integer division
 
@@ -305,11 +367,11 @@ void LoRaWAN::encryptPayload(aesKey& theKey) {
     }
 
     uint8_t theBlock[16];        // 16 bytes, which will be filled with certain values from LoRaWAN context, and then encrypted
+    // TODO : use an aesBlock instead
 
     for (uint32_t blockIndex = 0x00; blockIndex < nmbrOfBlocks; blockIndex++) {
-        //        prepareBlockAi(theBlock, blockIndex, linkDirection::uplink);
         prepareBlockAi(theBlock, linkDirection::uplink, DevAddr, uplinkFrameCount, (blockIndex + 1));
-        // AES_Encrypt(theBlock, theKey.asBytes()); // TODO
+        theBlock.encrypt(applicationKey);
 
         if (hasIncompleteBlock && (blockIndex == (nmbrOfBlocks - 1))) {
             for (uint32_t byteIndex = 0; byteIndex < incompleteBlockSize; byteIndex++) {
@@ -443,8 +505,8 @@ void LoRaWAN::sendUplink(framePort theFramePort, const uint8_t applicationData[]
     }
 
     // Wake the radio up..
-    theRadio.initializeInterface();        // does HAL_SUBGHZ_Init
-    theRadio.initializeRadio();            // writes all config registers.. should not be needed if config is retained
+    sx126x::initializeInterface();        // does HAL_SUBGHZ_Init
+    sx126x::initializeRadio();            // writes all config registers.. should not be needed if config is retained
 
     if (theFramePort == 0) {
         // uplink message with framePort 0, containing no frameOptions and framePayload is all MAC stuff, encrypted with networkKey
@@ -466,7 +528,7 @@ void LoRaWAN::sendUplink(framePort theFramePort, const uint8_t applicationData[]
     theChannels.selectRandomChannelIndex();        // randomize the channel index
     uint32_t txFrequency = theChannels.txRxChannels[theChannels.getCurrentChannelIndex()].frequency;
     spreadingFactor csf  = theDataRates.theDataRates[currentDataRateIndex].theSpreadingFactor;
-    theRadio.configForTransmit(csf, txFrequency, rawMessage + macHeaderOffset, loRaPayloadLength);
+    sx126x::configForTransmit(csf, txFrequency, rawMessage + macHeaderOffset, loRaPayloadLength);
 
     if (logging::isActive(logging::source::lorawanMac)) {
         logging::snprintf("Scheduled Uplink : channel = %u, frequency = %u, dataRate = %u, framePayloadLength = %u, frameOptionsLength = %u\n", theChannels.getCurrentChannelIndex(), txFrequency, currentDataRateIndex, framePayloadLength, frameOptionsLength);
@@ -486,7 +548,7 @@ void LoRaWAN::sendUplink(framePort theFramePort, const uint8_t applicationData[]
 }
 
 void LoRaWAN::getDownlinkMessage() {
-    // theRadio.getReceivedMessage();
+    // sx126x::getReceivedMessage();
     //  downlinkMessage.processDownlinkMessage(applicationPayloadReceived);
 }
 
@@ -495,7 +557,7 @@ messageType LoRaWAN::decodeMessage() {
     uint8_t response[2];
     sx126x::executeGetCommand(sx126x::command::getRxBufferStatus, response, 2);
     loRaPayloadLength = response[0];
-    theRadio.readBuffer(rawMessage + b0BlockLength, loRaPayloadLength);        // This reads the full LoRaWAN payload into rawMessage buffer, at an offset so the B0 block still fits in front
+    sx126x::readBuffer(rawMessage + b0BlockLength, loRaPayloadLength);        // This reads the full LoRaWAN payload into rawMessage buffer, at an offset so the B0 block still fits in front
     setOffsetsAndLengthsRx(loRaPayloadLength);
 
     if (logging::isActive(logging::source::lorawanMac)) {

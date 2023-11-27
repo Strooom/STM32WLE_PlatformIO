@@ -7,6 +7,10 @@ void aesBlock::set(const uint8_t bytes[lengthAsBytes]) {
     memcpy(state.asByte, bytes, lengthAsBytes);
 }
 
+uint8_t &aesBlock::operator[](std::size_t index) {
+    return state.asByte[index];
+}
+
 const uint8_t *aesBlock::asBytes() {
     return state.asByte;
 }
