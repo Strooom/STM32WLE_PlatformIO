@@ -166,16 +166,17 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Check PlatformIO
-        run: |
-          pio system info
-
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
+          repository: STMicroelectronics/STM32CubeWL
           path: home/runner/.platformio/packages/framework-stm32cubewl
           submodules: true
 
+      - name: Check PlatformIO
+        run: |
+          pio system info
+  
       - name: Run all generic unit tests
         run: |
           pio test -e all_generic_unittests
