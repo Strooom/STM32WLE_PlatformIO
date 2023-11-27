@@ -179,10 +179,7 @@ jobs:
         run: |
           ls -al
           ls -al .platformio
-          ls -al .platformio/platforms
-          ls -al .platformio/platforms/ststm32
-
-
+          ls -al .platformio/packages
 
       - name: Add stm32wle to PlatformIO platforms
         run: |
