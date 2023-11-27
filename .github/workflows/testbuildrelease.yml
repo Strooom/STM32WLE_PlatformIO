@@ -172,7 +172,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: STMicroelectronics/STM32CubeWL
-          path: /home/runner/.platformio/packages/framework-stm32cubewl
+          path: temp/framework-stm32cubewl
           submodules: true
       
       - name: List directory contents
