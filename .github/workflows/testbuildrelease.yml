@@ -173,6 +173,9 @@ jobs:
           path: .platformio/packages/framework-stm32cubewl
           submodules: true
 
+      - name: List directory contents
+        run: ls -al
+
       - name: Add stm32wle to PlatformIO platforms
         run: |
           cp .github/workflows/platform.json .platformio/platforms/ststm32/platform.json
