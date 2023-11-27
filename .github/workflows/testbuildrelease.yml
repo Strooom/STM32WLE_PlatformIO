@@ -163,23 +163,23 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Install STM32CubeWL
-        uses: actions/checkout@v4
-        with:
-          repository: STMicroelectronics/STM32CubeWL
-          path: .platformio/packages/framework-stm32cubewl
-          submodules: true
-  
       - name: Install PlatformIO Core
         run: |
           pip install --upgrade platformio
           pio pkg install --environment dummy
-
+          
+      - name: Install STM32CubeWL
+        uses: actions/checkout@v4
+        with:
+          repository: STMicroelectronics/STM32CubeWL
+          path: /home/runner/.platformio/packages/framework-stm32cubewl
+          submodules: true
+      
       - name: List directory contents
         run: |
           ls -al /home/runner/.platformio
           ls -al /home/runner/.platformio/packages
-          ls -al /home/runner/.platformio/platforms
+          ls -al /home/runner/.platformio/platforms/ststm32
 
 #      - name: Add stm32wle to PlatformIO platforms
 #        run: |
