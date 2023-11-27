@@ -1,5 +1,6 @@
 #include "aesblock.h"
 #include <cstring>        // needed for memcpy()
+#include <cstddef>        // std::size_t
 #include "aeskey.h"
 #include "sbox.h"
 

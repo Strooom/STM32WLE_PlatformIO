@@ -7,6 +7,7 @@
 
 #pragma once
 #include <stdint.h>
+#include <cstddef>        // std::size_t
 #include "aeskey.h"
 
 class aesBlock {
