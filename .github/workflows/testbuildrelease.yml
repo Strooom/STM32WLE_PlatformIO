@@ -166,7 +166,7 @@ jobs:
       - name: Install PlatformIO Core
         run: |
           pip install --upgrade platformio
-          pio platform install ststm32 
+          pio pkg install
 
       - name: Install STM32CubeWL
         uses: actions/checkout@v4
