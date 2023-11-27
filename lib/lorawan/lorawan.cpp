@@ -39,6 +39,8 @@ uint32_t LoRaWAN::framePortOffset{};
 uint32_t LoRaWAN::framePayloadOffset{};
 uint32_t LoRaWAN::micOffset{};
 
+txRxCycleState LoRaWAN::theTxRxCycleState{txRxCycleState::idle};        // state variable tracking the TxRxCycle state machine : TODO : provide a getter()
+
 linearBuffer<64> LoRaWAN::macIn;         // buffer holding the received MAC requests and/or answers
 linearBuffer<64> LoRaWAN::macOut;        // buffer holding the MAC requests and/or answers to be sent
 
@@ -299,11 +301,11 @@ void LoRaWAN::goTo(txRxCycleState newState) {
     }
 }
 
-bool LoRaWAN::isReadyToTransmit() const {
+bool LoRaWAN::isReadyToTransmit()  {
     return (theTxRxCycleState == txRxCycleState::idle);
 }
 
-uint32_t LoRaWAN::getMaxApplicationPayloadLength() const {
+uint32_t LoRaWAN::getMaxApplicationPayloadLength()  {
     return (theDataRates.theDataRates[currentDataRateIndex].maximumPayloadLength - macOut.getLevel());
 }
 
@@ -369,20 +371,22 @@ void LoRaWAN::encryptPayload(aesKey& theKey) {
     uint8_t theBlock[16];        // 16 bytes, which will be filled with certain values from LoRaWAN context, and then encrypted
     // TODO : use an aesBlock instead
 
-    for (uint32_t blockIndex = 0x00; blockIndex < nmbrOfBlocks; blockIndex++) {
-        prepareBlockAi(theBlock, linkDirection::uplink, DevAddr, uplinkFrameCount, (blockIndex + 1));
-        theBlock.encrypt(applicationKey);
 
-        if (hasIncompleteBlock && (blockIndex == (nmbrOfBlocks - 1))) {
-            for (uint32_t byteIndex = 0; byteIndex < incompleteBlockSize; byteIndex++) {
-                rawMessage[(blockIndex * 16) + byteIndex + framePayloadOffset] ^= theBlock[byteIndex];
-            }
-        } else {
-            for (uint32_t byteIndex = 0; byteIndex < 16; byteIndex++) {
-                rawMessage[(blockIndex * 16) + byteIndex + framePayloadOffset] ^= theBlock[byteIndex];
-            }
-        }
-    }
+// TODO : adjust for aesBlock io uint8_t[16]
+    // for (uint32_t blockIndex = 0x00; blockIndex < nmbrOfBlocks; blockIndex++) {
+    //     prepareBlockAi(theBlock, linkDirection::uplink, DevAddr, uplinkFrameCount, (blockIndex + 1));
+    //     theBlock.encrypt(applicationKey);
+
+    //     if (hasIncompleteBlock && (blockIndex == (nmbrOfBlocks - 1))) {
+    //         for (uint32_t byteIndex = 0; byteIndex < incompleteBlockSize; byteIndex++) {
+    //             rawMessage[(blockIndex * 16) + byteIndex + framePayloadOffset] ^= theBlock[byteIndex];
+    //         }
+    //     } else {
+    //         for (uint32_t byteIndex = 0; byteIndex < 16; byteIndex++) {
+    //             rawMessage[(blockIndex * 16) + byteIndex + framePayloadOffset] ^= theBlock[byteIndex];
+    //         }
+    //     }
+    // }
 }
 
 void LoRaWAN::decryptPayload(aesKey& theKey) {

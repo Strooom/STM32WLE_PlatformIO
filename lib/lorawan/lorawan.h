@@ -40,7 +40,7 @@ class LoRaWAN {
     static void logSettings();        // log the current settings of the LoRaWAN layer
     static void logState();           // log the current state of the LoRaWAN layer
 
-    static txRxCycleState theTxRxCycleState{txRxCycleState::idle};        // state variable tracking the TxRxCycle state machine : TODO : provide a getter()
+    static txRxCycleState theTxRxCycleState;        // state variable tracking the TxRxCycle state machine : TODO : provide a getter()
 
 #ifndef unitTesting
   private:
@@ -59,9 +59,9 @@ class LoRaWAN {
     //  messageIntegrityCode mic;
 
     static dataRates theDataRates;
-    static uint32_t currentDataRateIndex{0};
+    static uint32_t currentDataRateIndex;
     static loRaChannelCollection theChannels;
-    static uint32_t rx1Delay{1};        // in [seconds]
+    static uint32_t rx1Delay;        // in [seconds]
 
     // transmitPower theTransmitPower{transmitPower::max};
     // static constexpr uint32_t maxRandomDelayBeforeTx{16384U};        // offset in the rawMessage where the header(s) starts
