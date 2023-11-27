@@ -186,7 +186,7 @@ jobs:
           cp -f .github/workflows/platform.json /home/runner/.platformio/platforms/ststm32/platform.json
           cp -r temp/framework-stm32cubewl /home/runner/.platformio/packages/framework-stm32cubewl
           cp -f .github/workflows/package.json /home/runner/.platformio/packages/framework-stm32cubewl/package.json
-          ls /home/runner/.platformio/packages/framework-stm32cubewl
+          cp /home/runner/.platformio/packages/framework-stm32cubewl/Utilities/misc/stm32_systime_if_template.h /home/runner/.platformio/packages/framework-stm32cubewl/Utilities/misc/stm32_systime_if.h
 
       - name: Check PlatformIO
         run: |
