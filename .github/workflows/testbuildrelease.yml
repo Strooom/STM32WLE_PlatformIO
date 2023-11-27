@@ -179,7 +179,8 @@ jobs:
         run: |
           ls -al /home/runner/.platformio
           ls -al /home/runner/.platformio/packages
-          
+          ls -al /home/runner/.platformio/platforms
+
 #      - name: Add stm32wle to PlatformIO platforms
 #        run: |
 #          cp .github/workflows/platform.json .platformio/p/ststm32/platform.json
