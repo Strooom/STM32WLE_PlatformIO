@@ -177,6 +177,7 @@ jobs:
 
       - name: List directory contents
         run: |
+          ls -al ..
           ls -al
           ls -al .platformio
           ls -al .platformio/packages
