@@ -164,7 +164,9 @@ jobs:
           python-version: "3.9"
 
       - name: Install PlatformIO Core
-        run: pip install --upgrade platformio
+        run: |
+          pip install --upgrade platformio
+          pio platform install ststm32 
 
       - name: Install STM32CubeWL
         uses: actions/checkout@v4
@@ -174,7 +176,13 @@ jobs:
           submodules: true
 
       - name: List directory contents
-        run: ls -al
+        run: |
+          ls -al
+          ls -al .platformio
+          ls -al .platformio/platforms
+          ls -al .platformio/platforms/ststm32
+
+
 
       - name: Add stm32wle to PlatformIO platforms
         run: |
