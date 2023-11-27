@@ -177,12 +177,9 @@ jobs:
 
       - name: List directory contents
         run: |
-          ls -al ../..
-          ls -al ..
-          ls -al
-          ls -al .platformio
-          ls -al .platformio/packages
-
+          ls -al /home/runner/.platformio
+          ls -al /home/runner/.platformio/packages
+          
 #      - name: Add stm32wle to PlatformIO platforms
 #        run: |
 #          cp .github/workflows/platform.json .platformio/p/ststm32/platform.json
