@@ -166,11 +166,11 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Checkout Repository
+      - name: Install STM32CubeWL
         uses: actions/checkout@v4
         with:
           repository: STMicroelectronics/STM32CubeWL
-          path: home/runner/.platformio/packages/framework-stm32cubewl
+          path: .platformio/packages/framework-stm32cubewl
           submodules: true
 
       - name: Check PlatformIO
