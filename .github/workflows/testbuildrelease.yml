@@ -166,6 +166,10 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
+      - name: Check PlatformIO
+        run: |
+          pio system info
+
       - name: Run all generic unit tests
         run: |
           pio test -e all_generic_unittests
