@@ -22,6 +22,48 @@ void test_setFromBytes() {
     TEST_ASSERT_EQUAL_UINT32_ARRAY(expectedWords, aBlock.asWords(), aesKey::lengthAsWords);
 }
 
+void test_setAsArray() {
+    aesBlock aBlock;
+    aBlock[0]  = 0x00;
+    aBlock[1]  = 0x11;
+    aBlock[2]  = 0x22;
+    aBlock[3]  = 0x33;
+    aBlock[4]  = 0x44;
+    aBlock[5]  = 0x55;
+    aBlock[6]  = 0x66;
+    aBlock[7]  = 0x77;
+    aBlock[8]  = 0x88;
+    aBlock[9]  = 0x99;
+    aBlock[10] = 0xAA;
+    aBlock[11] = 0xBB;
+    aBlock[12] = 0xCC;
+    aBlock[13] = 0xDD;
+    aBlock[14] = 0xEE;
+    aBlock[15] = 0xFF;
+
+    TEST_ASSERT_EQUAL_UINT8(aBlock[0], 0x00);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[1], 0x11);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[2], 0x22);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[3], 0x33);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[4], 0x44);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[5], 0x55);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[6], 0x66);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[7], 0x77);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[8], 0x88);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[9], 0x99);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[10], 0xAA);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[11], 0xBB);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[12], 0xCC);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[13], 0xDD);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[14], 0xEE);
+    TEST_ASSERT_EQUAL_UINT8(aBlock[15], 0xFF);
+
+    uint8_t expectedBytes[aesKey::lengthAsBytes]{0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expectedBytes, aBlock.asBytes(), 16);
+
+
+}
+
 void test_encrypt() {
     aesKey aKey;
     uint8_t keyAsBytes[16]{0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C};
@@ -168,6 +210,7 @@ int main(int argc, char** argv) {
     UNITY_BEGIN();
     RUN_TEST(test_initialize);
     RUN_TEST(test_setFromBytes);
+    RUN_TEST(test_setAsArray);
     RUN_TEST(testMatrixToVectorToMatrix);
     RUN_TEST(testBytesToWordsToBytes);
 
