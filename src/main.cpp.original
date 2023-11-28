@@ -1,44 +1,47 @@
-// #############################################################################
-// ### This file is part of the source code for the MuMo project             ###
-// ### https://github.com/Strooom/MuMo-v2-Node-SW                            ###
-// ### Author(s) : Pascal Roobrouck - @strooom                               ###
-// ### License : https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode ###
-// #############################################################################
+#include "main.h"
+#include "utilities_conf.h"
+// #include "app_subghz_phy.h" change here for recompile
 
 #include <stdint.h>
-
-#include "logging.h"               // logging to SWO and/or UART
-#include "circularbuffer.h"        // needed for global applicationEventBuffer and loraWanEventBuffer
+#include <stdio.h>        // for snprintf()...
+#include "logging.h"
+#include "circularbuffer.h"
 #include "applicationevent.h"
-#include "version.h"
-#include "lorawanevent.h"
+#include "txrxcycle.h"
+#include "lorawan.h"
+#include "string.h"
+#include "sx126x.h"
 #include "maincontroller.h"
 #include "power.h"
 #include "cli.h"
-#include "lorawan.h"
+#include "sensorcollection.h"
+#include "nvs.h"
+#include "measurementcollection.h"
+#include "bme680.h"
+#include "tsl2591.h"
 #include "gpio.h"
-#include "main.h"                  // required for access to STM32 HAL
-#include "utilities_conf.h"        // required for access to STM32 HAL
 
 ADC_HandleTypeDef hadc;
 CRYP_HandleTypeDef hcryp;
+__ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 I2C_HandleTypeDef hi2c2;
 LPTIM_HandleTypeDef hlptim1;
 RNG_HandleTypeDef hrng;
 RTC_HandleTypeDef hrtc;
 SPI_HandleTypeDef hspi2;
 SUBGHZ_HandleTypeDef hsubghz;
-// UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;        // UART2 on PA2 (TX) and PA3 (RX) is connected to the USB-UART bridge
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
-circularBuffer<applicationEvent, 16U> applicationEventBuffer;
+
 circularBuffer<loRaWanEvent, 16U> loraWanEventBuffer;
+circularBuffer<applicationEvent, 16U> applicationEventBuffer;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_GPIO_LowPower(bool debugProbePresent);
-static void MX_ADC_Init(void);
-static void MX_AES_Init(void);
+// static void MX_ADC_Init(void);
+// static void MX_AES_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_LPTIM1_Init(void);
 static void MX_RNG_Init(void);
@@ -49,56 +52,52 @@ static void MX_USART2_UART_Init(void);
 
 int main(void) {
     HAL_Init();
-    HAL_Delay(5000U);                                                 // This initial delay prevents the MCU from going into sleep immediately, so the debugger is able to connect
-    SystemClock_Config();                                             // first thing to do is configure the clock : 16 MHz MSI for MCU and 32768 kHz LSE for RTC
-    __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);        // set the clock for the wakeup from STOP mode to MSI as well
+    HAL_Delay(5000U);        // This initial delay prevents the MCU from going into sleep before the debugger is able to connect
+    SystemClock_Config();
+    __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
 
-    // Configure logging
-
-    if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk) == 0x0001) {        // if there is a SWD debugprobe connected...
-        logging::enable(logging::destination::debugProbe);                     // enable the output to SWO
+    if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk) == 0x0001) {
+        logging::enable(logging::destination::debugProbe);
     }
+
     gpio::enableGpio(gpio::group::usbPresent);
-    if (power::hasUsbPower()) {                             // if there is USB power...
-        logging::enable(logging::destination::uart);        // enable the output to UART
+    if (power::hasUsbPower()) {
+        // logging::enable(logging::destination::uart); // TODO : enable this as soon as output to UART1 is working
     }
 
-    // Show the version of the software
-
-    version::setIsVersion();
-    logging::snprintf("MuMo v2 - %s - Boot\n", version::getIsVersionAsString());
-    logging::snprintf("Creative Commons 4.0 - BY-NC-SA\n");
+    logging::snprintf("MuMo v2 - V1.0.3 - Boot\n");
 
     if (logging::isActive(logging::destination::debugProbe)) {
         LL_DBGMCU_EnableDBGStopMode();
         logging::snprintf("debugProbe connected\n");
     } else {
-        LL_DBGMCU_DisableDBGStopMode();                   // no debugging in low power -> the MCU will really stop the clock
-        gpio::disableGpio(gpio::group::debugPort);        // these IOs are enabled by default after reset, but as there is no debug probe, we disable them to reduce power consumption
+        LL_DBGMCU_DisableDBGStopMode();        // no debugging in low power -> the MCU will really stop the clock
+        gpio::disableGpio(gpio::group::debugPort);
     }
 
     if (logging::isActive(logging::destination::uart)) {
         logging::snprintf("USB connected\n");
     }
 
-    logging::enable(logging::source::criticalError);
-    logging::enable(logging::source::error);
-    // logging::enable(logging::source::lorawanSettings);
-    // logging::enable(logging::source::lorawanState);
-    // logging::enablelogging::source(logging::source::lorawanTiming);
-    // logging::enablelogging::source(logging::source::lorawanEvents);
-    // logging::enablelogging::source(logging::source::lorawanMac);
-    // logging::enable(logging::source::sensorEvents);
-
-    // gpio::enableGpio(gpio::group::i2c);
-    // gpio::enableGpio(gpio::group::writeProtect);
-    // gpio::enableGpio(gpio::group::rfControl);
-
+    gpio::enableGpio(gpio::group::i2c);
+    gpio::enableGpio(gpio::group::writeProtect);
+    gpio::enableGpio(gpio::group::rfControl);
     MX_RTC_Init();
     MX_LPTIM1_Init();
     MX_RNG_Init();
     MX_I2C2_Init();
-    MX_AES_Init();
+
+    // Enable/Disable the logging sources we want to monitor
+    logging::enable(logging::source::criticalError);
+    logging::enable(logging::source::error);
+    logging::enable(logging::source::lorawanSettings);
+    logging::enable(logging::source::lorawanState);
+    // logging::enablelogging::source(logging::source::lorawanTiming);
+    // logging::enablelogging::source(logging::source::lorawanEvents);
+    // logging::enablelogging::source(logging::source::lorawanMac);
+    logging::enable(logging::source::sensorEvents);
+
+    // nvs.initializeOnce(false);        // set true to factory reset a device by overwriting all settings in EEPROM
 
     mainController::initialize();
 
@@ -111,16 +110,23 @@ int main(void) {
             applicationEventBuffer.push(applicationEvent::usbRemoved);
         }
 
-        cli::handleRxEvent();
+        if (power::hasUsbPower()) {
+            // When USB is connected, run the CLI
+            // theCli.handleRxEvent();
+            // theCli.handleEvents();
+        }
+
+        // LoRaWAN::run(); // Not essential fttb. This will send a port 0 message when the macOut contains more than 15 bytes
+
         LoRaWAN::handleEvents();
         mainController::handleEvents();
 
         if (!power::hasUsbPower()) {        // When no external USB power, go into sleep
             gpio::disableGpio(gpio::group::usbPresent);
             HAL_I2C_DeInit(&hi2c2);
-            UTILS_ENTER_CRITICAL_SECTION();        // mask interrupts TODO : document why even if interrupts are masked, the RTC still wakes up the MCU. What about other interrupts to wake up ?
+            UTILS_ENTER_CRITICAL_SECTION();        // mask interrupts
 
-            if (LoRaWAN::theTxRxCycleState == txRxCycleState::idle) {                          // If the LoRaWAN stack is idle...
+            if (LoRaWAN::theTxRxCycleState == txRxCycleState::idle) {                       // If the LoRaWAN stack is idle...
                 if (applicationEventBuffer.isEmpty() && loraWanEventBuffer.isEmpty()) {        // If no events are pending in any of the eventBuffers...
                     logging::snprintf("goSleep...\n");                                         //
                     HAL_SuspendTick();                                                         // stop Systick
@@ -178,23 +184,37 @@ void SystemClock_Config(void) {
     }
 }
 
-static void MX_AES_Init(void) {
-    __ALIGN_BEGIN static  uint32_t pKeyAES[4] __ALIGN_END = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
-
-    hcryp.Instance             = AES;
-    hcryp.Init.DataType        = CRYP_DATATYPE_32B;
-    hcryp.Init.KeySize         = CRYP_KEYSIZE_128B;
-    hcryp.Init.pKey            = pKeyAES;
-    hcryp.Init.Algorithm       = CRYP_AES_ECB;
-    hcryp.Init.DataWidthUnit   = CRYP_DATAWIDTHUNIT_WORD;
-    hcryp.Init.HeaderWidthUnit = CRYP_HEADERWIDTHUNIT_WORD;
-    hcryp.Init.KeyIVConfigSkip = CRYP_KEYIVCONFIG_ALWAYS;
-    if (HAL_CRYP_Init(&hcryp) != HAL_OK) {
-        Error_Handler();
-    }
-}
-
+// static void MX_AES_Init(void) {
+//     /* USER CODE BEGIN AES_Init 0 */
+//
+//     /* USER CODE END AES_Init 0 */
+//
+//     /* USER CODE BEGIN AES_Init 1 */
+//
+//     /* USER CODE END AES_Init 1 */
+//     hcryp.Instance             = AES;
+//     hcryp.Init.DataType        = CRYP_DATATYPE_32B;
+//     hcryp.Init.KeySize         = CRYP_KEYSIZE_128B;
+//     hcryp.Init.pKey            = (uint32_t *)pKeyAES;
+//     hcryp.Init.Algorithm       = CRYP_AES_ECB;
+//     hcryp.Init.DataWidthUnit   = CRYP_DATAWIDTHUNIT_WORD;
+//     hcryp.Init.HeaderWidthUnit = CRYP_HEADERWIDTHUNIT_WORD;
+//     hcryp.Init.KeyIVConfigSkip = CRYP_KEYIVCONFIG_ALWAYS;
+//     if (HAL_CRYP_Init(&hcryp) != HAL_OK) {
+//         Error_Handler();
+//     }
+//     /* USER CODE BEGIN AES_Init 2 */
+//
+//     /* USER CODE END AES_Init 2 */
+// }
 static void MX_I2C2_Init(void) {
+    /* USER CODE BEGIN I2C2_Init 0 */
+
+    /* USER CODE END I2C2_Init 0 */
+
+    /* USER CODE BEGIN I2C2_Init 1 */
+
+    /* USER CODE END I2C2_Init 1 */
     hi2c2.Instance              = I2C2;
     hi2c2.Init.Timing           = 0x0010061A;
     hi2c2.Init.OwnAddress1      = 0;
@@ -346,37 +366,38 @@ static void MX_SPI2_Init(void) {
  * @retval None
  */
 void MX_SUBGHZ_Init(void) {
+    
     hsubghz.Init.BaudratePrescaler = SUBGHZSPI_BAUDRATEPRESCALER_2;
     if (HAL_SUBGHZ_Init(&hsubghz) != HAL_OK) {
         Error_Handler();
     }
 }
 
-// static void MX_USART1_UART_Init(void) {
-//     huart1.Instance                    = USART1;
-//     huart1.Init.BaudRate               = 115200;
-//     huart1.Init.WordLength             = UART_WORDLENGTH_8B;
-//     huart1.Init.StopBits               = UART_STOPBITS_1;
-//     huart1.Init.Parity                 = UART_PARITY_NONE;
-//     huart1.Init.Mode                   = UART_MODE_TX_RX;
-//     huart1.Init.HwFlowCtl              = UART_HWCONTROL_NONE;
-//     huart1.Init.OverSampling           = UART_OVERSAMPLING_16;
-//     huart1.Init.OneBitSampling         = UART_ONE_BIT_SAMPLE_DISABLE;
-//     huart1.Init.ClockPrescaler         = UART_PRESCALER_DIV1;
-//     huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-//     if (HAL_UART_Init(&huart1) != HAL_OK) {
-//         Error_Handler();
-//     }
-//     if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) {
-//         Error_Handler();
-//     }
-//     if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) {
-//         Error_Handler();
-//     }
-//     if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK) {
-//         Error_Handler();
-//     }
-// }
+static void MX_USART1_UART_Init(void) {
+    huart1.Instance                    = USART1;
+    huart1.Init.BaudRate               = 115200;
+    huart1.Init.WordLength             = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits               = UART_STOPBITS_1;
+    huart1.Init.Parity                 = UART_PARITY_NONE;
+    huart1.Init.Mode                   = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl              = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling           = UART_OVERSAMPLING_16;
+    huart1.Init.OneBitSampling         = UART_ONE_BIT_SAMPLE_DISABLE;
+    huart1.Init.ClockPrescaler         = UART_PRESCALER_DIV1;
+    huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+    if (HAL_UART_Init(&huart1) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK) {
+        Error_Handler();
+    }
+}
 
 static void MX_USART2_UART_Init(void) {
     huart2.Instance                    = USART2;
@@ -433,6 +454,7 @@ static void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 static void MX_GPIO_LowPower(bool debugProbePresent) {

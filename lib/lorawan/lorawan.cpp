@@ -3,7 +3,7 @@
 #include "sx126x.h"
 #include "logging.h"
 #include "circularbuffer.h"
-
+#include "lorawanevent.h"
 #include "settingscollection.h"
 #include "applicationevent.h"
 #include "maccommand.h"

@@ -7,22 +7,14 @@
 
 #pragma once
 #include <stdint.h>
-#include "circularbuffer.h"
 
-class cli {
-  public:
-    static void handleRxEvent();
-
-  private:
-    static void handleEvents();
-    static void jumpToBootLoader();
-
-    static constexpr uint32_t commandBufferLength{256};
-    static constexpr uint32_t responseBufferLength{256};
-
-    static circularBuffer<uint8_t, commandBufferLength> commandBuffer;
-    static circularBuffer<uint8_t, responseBufferLength> responseBuffer;
-
-    static constexpr uint8_t bootLoaderMagicValue{0x7F};
-
+enum class loRaWanEvent : uint8_t {
+    none = 0x00,             // when an eventBuffer underflows, it pops this dummy event
+    sx126xCadEnd,            //
+    sx126xTxComplete,        // transmit complete interrupt from the SX126x
+    sx126xRxComplete,        // receive complete interrupt from the SX126x
+    sx126xTimeout,           // interrupt from the SX126x timeout
+    timeOut,                 // interrupt from the LPTIM1
 };
+
+const char* toString(loRaWanEvent anEvent);

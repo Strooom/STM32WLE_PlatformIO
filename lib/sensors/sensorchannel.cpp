@@ -1,6 +1,8 @@
 #include "sensorchannel.h"
 #include "power.h"
 
+sensorChannel::sensorChannel() : type{sensorChannelType::none}, oversamplingLowPower{0}, prescalerLowPower{0}, oversamplingHighPower{0}, prescalerHighPower{0} {};
+
 sensorChannel::sensorChannel(sensorChannelType type, uint32_t oversamplingLowPower, uint32_t prescalerLowPower, uint32_t oversamplingHighPower, uint32_t prescalerHighPower) : type{type},
                                                                                                                                                                                oversamplingLowPower{oversamplingLowPower},
                                                                                                                                                                                prescalerLowPower{prescalerLowPower},

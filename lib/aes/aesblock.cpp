@@ -4,6 +4,12 @@
 #include "aeskey.h"
 #include "sbox.h"
 
+#ifndef generic
+#include "main.h"
+extern CRYP_HandleTypeDef hcryp;
+#else
+#endif
+
 void aesBlock::set(const uint8_t bytes[lengthAsBytes]) {
     memcpy(state.asByte, bytes, lengthAsBytes);
 }
@@ -55,6 +61,14 @@ void aesBlock::wordsToBytes(uint32_t wordsIn[4], uint8_t bytesOut[16]) {
 
 void aesBlock::encrypt(aesKey &key) {
 #ifndef generic
+    uint32_t plainTextAsWords[4];
+    uint32_t cypherTextAsWords[4];
+    bytesToWords(state.asByte, plainTextAsWords);        // convert the 16 bytes to 4 words the way the hardware expects it
+    if (HAL_CRYP_Encrypt(&hcryp, plainTextAsWords, 4, cypherTextAsWords, 50) != HAL_OK) {
+        // Error_Handler();
+    }
+    wordsToBytes(cypherTextAsWords, state.asByte);        // convert the 4 words back to 16 bytes
+
 // TODO : provide a hardware implementation
 // Initialize AES :
 // * clear EN bit in AES_CR
@@ -92,7 +106,7 @@ void aesBlock::substituteBytes() {
 
 void aesBlock::XOR(const uint8_t *data) {
     for (uint32_t index = 0; index < lengthAsBytes; index++) {
-        state.asByte[index] = state.asByte[index] ^= data[index];
+        state.asByte[index] ^= data[index];
     }
 }
 

@@ -5,20 +5,13 @@
 
 class version {
   public:
-
     static uint8_t getIsVersionMajor() { return isVersionMajor; }
     static uint8_t getIsVersionMinor() { return isVersionMinor; }
     static uint8_t getIsVersionPatch() { return isVersionPatch; }
     static buildType getBuildType() { return theBuildType; }
     static buildEnvironment getBuildEnvironment() { return theBuildEnvironment; }
-    static const char* getIsVersionAsString() { return isVersionString; }
-
     static void setIsVersion();
-    
-    static bool isValidToBeVersionString(const char* aVersion);
-    static void setToBeVersionFromString(const char* aVersion);
-    static void replaceDelimitorWithDot(char* theString, char theDelimitor);
-    static void stripLeadingV(char* theString);
+    static const char* getIsVersionAsString() { return isVersionString; }
 
 #ifndef unitTesting
   private:
@@ -31,6 +24,6 @@ class version {
     static buildType theBuildType;
     static buildEnvironment theBuildEnvironment;
 
-    static constexpr uint8_t maxVersionStringLength{40U};        // maximum length of string holding the version, eg V30_50_00_00-100-g7da1beb-PROD
+    static constexpr uint8_t maxVersionStringLength{16U};
     static char isVersionString[maxVersionStringLength];
 };

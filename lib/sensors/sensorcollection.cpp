@@ -9,6 +9,8 @@
 #include "tsl2591.h"
 #include "logging.h"
 
+uint32_t sensorChannelCollection::actualNumberOfChannels{};
+sensorChannel sensorChannelCollection::theSensorChannelCollection[maxNumberOfChannels];
 
 // sensorChannelCollection::runResult sensorChannelCollection::run() {
 //     actualNumberOfMeasurements = 0;        // reset the array of measurements

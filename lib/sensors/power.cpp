@@ -3,17 +3,22 @@
 bool power::usbPower{false};
 
 #ifndef generic
-
 #include "main.h"
-
-extern ADC_HandleTypeDef hadc;
+// extern ADC_HandleTypeDef hadc; To be used for measuring the batteryvoltage
+#else
+bool power::mockUsbPower{false};
+#endif
 
 bool power::hasUsbPower() {
+#ifndef generic
     return (GPIO_PIN_SET == HAL_GPIO_ReadPin(GPIOB, usbPowerPresent_Pin));
+#else
+    return mockUsbPower;
+#endif
 }
 
 bool power::isUsbConnected() {
-    bool newUsbPower = (GPIO_PIN_SET == HAL_GPIO_ReadPin(GPIOB, usbPowerPresent_Pin));
+    bool newUsbPower = hasUsbPower();
     if (newUsbPower && !usbPower) {
         usbPower = true;
         return true;
@@ -23,7 +28,7 @@ bool power::isUsbConnected() {
 }
 
 bool power::isUsbRemoved() {
-    bool newUsbPower = (GPIO_PIN_SET == HAL_GPIO_ReadPin(GPIOB, usbPowerPresent_Pin));
+    bool newUsbPower = hasUsbPower();
     if (!newUsbPower && usbPower) {
         usbPower = false;
         return true;
@@ -31,21 +36,3 @@ bool power::isUsbRemoved() {
         return false;
     }
 }
-
-#else
-
-bool power::mockUsbPower{false};
-
-bool power::hasUsbPower() {
-    return mockUsbPower;
-}
-
-bool power::isUsbConnected() {
-    return false;
-}
-
-bool power::isUsbRemoved() {
-    return false;
-}
-
-#endif
