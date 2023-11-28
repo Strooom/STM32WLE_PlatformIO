@@ -10,7 +10,7 @@
 #include "main.h"
 extern I2C_HandleTypeDef hi2c2;
 #else
-extern uint8_t mockRegisters[256];
+extern uint8_t mockBME680Registers[256];
 #include <cstring>
 
 #endif
@@ -177,7 +177,7 @@ uint8_t bme680::readRegister(registers registerAddress) {
 #ifndef generic
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, &result, 1, halTimeout);
 #else
-    result                                               = mockRegisters[static_cast<uint8_t>(registerAddress)];
+    result                                               = mockBME680Registers[static_cast<uint8_t>(registerAddress)];
 #endif
     return result;
 }
@@ -186,7 +186,7 @@ void bme680::writeRegister(registers registerAddress, uint8_t value) {
 #ifndef generic
     HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, static_cast<uint16_t>(registerAddress), I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
 #else
-    mockRegisters[static_cast<uint8_t>(registerAddress)] = value;
+    mockBME680Registers[static_cast<uint8_t>(registerAddress)] = value;
 #endif
 }
 
@@ -194,6 +194,6 @@ void bme680::readRegisters(uint16_t startAddress, uint16_t length, uint8_t* dest
 #ifndef generic
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, startAddress, I2C_MEMADD_SIZE_8BIT, destination, length, halTimeout);
 #else
-    memcpy(destination, mockRegisters + startAddress, length);
+    memcpy(destination, mockBME680Registers + startAddress, length);
 #endif
 }

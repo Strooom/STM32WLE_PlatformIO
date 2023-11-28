@@ -12,7 +12,7 @@
 extern I2C_HandleTypeDef hi2c2;
 #else
 #include <cstring>
-extern uint8_t mockRegisters[256];
+extern uint8_t mockTSL2591Registers[256];
 #endif
 
 sensorChannel tsl2591::channels[nmbrChannels]{
@@ -143,7 +143,7 @@ uint8_t tsl2591::readRegister(registers registerAddress) {
 #ifndef generic
     HAL_I2C_Mem_Read(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &result, 1, halTimeout);
 #else
-    result                                               = mockRegisters[static_cast<uint8_t>(registerAddress)];
+    result                                               = mockTSL2591Registers[static_cast<uint8_t>(registerAddress)];
 #endif
     return result;
 }
@@ -153,6 +153,6 @@ void tsl2591::writeRegister(registers registerAddress, uint8_t value) {
 #ifndef generic
     HAL_I2C_Mem_Write(&hi2c2, i2cAddress << 1, command, I2C_MEMADD_SIZE_8BIT, &value, 1, halTimeout);
 #else
-    mockRegisters[static_cast<uint8_t>(registerAddress)] = value;
+    mockTSL2591Registers[static_cast<uint8_t>(registerAddress)] = value;
 #endif
 }

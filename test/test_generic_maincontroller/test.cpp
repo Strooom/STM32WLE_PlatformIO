@@ -1,9 +1,17 @@
 #include <unity.h>
 #include "circularbuffer.h"
 #include "applicationevent.h"
+#include "lorawanevent.h"
 #include "maincontroller.h"
 
 circularBuffer<applicationEvent, 16U> applicationEventBuffer;
+circularBuffer<loRaWanEvent, 16U> loraWanEventBuffer;
+
+uint8_t mockSX126xDataBuffer[256];            // unitTesting mock for the LoRa Rx/Tx buffer, inside the SX126x
+uint8_t mockSX126xRegisters[0x1000];          // unitTesting mock for the config registers, inside the SX126x
+uint8_t mockSX126xCommandData[256][8];        // unitTesting mock for capturing the commands and their parameters to configure the SX126x
+uint8_t mockBME680Registers[256]{};           // unitTesting mock for the config registers, inside the BME680
+uint8_t mockTSL2591Registers[256]{};          // unitTesting mock for the config registers, inside the TSL2591
 
 void setUp(void) {}           // before test
 void tearDown(void) {}        // after test
