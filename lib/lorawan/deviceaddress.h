@@ -10,16 +10,16 @@
 
 class deviceAddress {
   public:
-    static constexpr uint32_t length{4};                             // length of the deviceAddress in bytes
-    deviceAddress();                                                 //
-    explicit deviceAddress(uint32_t theDeviceAddress);               //
-    explicit deviceAddress(uint8_t theDeviceAddress[length]);        //
-    void set(uint32_t theDeviceAddress);                             // decode the deviceAddress from a uint32_t
-    void set(uint8_t theDeviceAddress[length]);                      // set the deviceAddress from an array of 4 bytes
+    static constexpr uint32_t lengthInBytes{4};                             // length of the deviceAddress in bytes
+    explicit deviceAddress();                                                        //
+    explicit deviceAddress(uint32_t theDeviceAddress);                      //
+    explicit deviceAddress(uint8_t theDeviceAddress[lengthInBytes]);        //
+    void set(uint32_t theDeviceAddress);                                    // decode the deviceAddress from a uint32_t
+    void set(uint8_t theDeviceAddress[lengthInBytes]);                      // set the deviceAddress from an array of 4 bytes
 
     union {
         uint32_t asUint32{0};
-        uint8_t asUint8[length];
+        uint8_t asUint8[lengthInBytes];
     };
 
   private:

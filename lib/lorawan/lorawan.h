@@ -74,7 +74,7 @@ class LoRaWAN {
     static constexpr uint32_t maxLoRaPayloadLength{256};                         // limited to length of databuffer in SX126x
     static constexpr uint32_t b0BlockLength{16};                                 // length of the so-called B0 block, in front of the LoRa payload, needed to calculate MIC
     static constexpr uint32_t macHeaderLength{1};                                // length of MHDR in [bytes]
-    static constexpr uint32_t deviceAddressLength{deviceAddress::length};        // length of DevAddr in [bytes]
+    static constexpr uint32_t deviceAddressLength{deviceAddress::lengthInBytes};        // length of DevAddr in [bytes]
     static constexpr uint32_t frameControlLength{1};                             // length of FCtrl in [bytes]
     static constexpr uint32_t frameCountLSHLength{2};                            // frameCount Least Significant Halve - truncated to 2 LSbytes only
     static constexpr uint32_t micLength{messageIntegrityCode::length};           // length of MIC in [bytes]
