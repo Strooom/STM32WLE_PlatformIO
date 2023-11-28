@@ -1,5 +1,15 @@
 #include "framecontrol.h"
 
+frameControl::frameControl() {
+    theLinkDirection = linkDirection::uplink;
+    ADR       = false;
+    ADRACKReq = false;
+    ACK       = false;
+    ClassB    = false;
+    FPending  = false;
+    FOptsLen  = 0;
+}
+
 frameControl::frameControl(linkDirection newLinkDirection) {
     theLinkDirection = newLinkDirection;
     if (theLinkDirection == linkDirection::uplink) {
@@ -26,9 +36,9 @@ uint8_t frameControl::asByte() const {
 
 void frameControl::fromByte(uint8_t theByte) {
     theLinkDirection = linkDirection::downlink;
-    ADR       = ((theByte & 0x80) == 0x80);
-    ADRACKReq = ((theByte & 0x40) == 0x40);
-    ACK       = ((theByte & 0x20) == 0x20);
-    FPending  = ((theByte & 0x10) == 0x10);
-    FOptsLen  = (theByte & 0x0F);
+    ADR              = ((theByte & 0x80) == 0x80);
+    ADRACKReq        = ((theByte & 0x40) == 0x40);
+    ACK              = ((theByte & 0x20) == 0x20);
+    FPending         = ((theByte & 0x10) == 0x10);
+    FOptsLen         = (theByte & 0x0F);
 }

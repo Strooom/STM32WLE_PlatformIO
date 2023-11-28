@@ -12,14 +12,16 @@
 
 class frameControl {
   public:
-    frameControl();                                               // default constructor
+    explicit frameControl();                                      // default constructor
     explicit frameControl(linkDirection theLinkDirection);        // slighly smarter constructor, creates one based on the link direction
     void set(bool ADR, bool ADRACKReq, bool ACK, bool ClassB, uint8_t FOptsLen);
-    uint8_t asByte() const;                                       // return the frameControl as a byte - used in uplink / transmit direction
-    void fromByte(uint8_t theByte);                               // decode the frameControl from a byte - used in the downlink / receive direction
-    static constexpr uint32_t length{1};                          // [bytes]
+    uint8_t asByte() const;                     // return the frameControl as a byte - used in uplink / transmit direction
+    void fromByte(uint8_t theByte);             // decode the frameControl from a byte - used in the downlink / receive direction
+    static constexpr uint32_t length{1};        // [bytes]
+#ifndef unitTesting
 
   private:
+#endif
     linkDirection theLinkDirection{linkDirection::uplink};
     bool ADR{false};              // bit [7]
     bool ADRACKReq{false};        // bit [6]
