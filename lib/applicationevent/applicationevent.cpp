@@ -2,6 +2,10 @@
 
 const char* toString(applicationEvent anEvent) {
     switch (anEvent) {
+        case applicationEvent::none:
+            return "none";
+            break;
+
         case applicationEvent::usbConnected:
             return "usb Connected";
             break;
@@ -23,7 +27,7 @@ const char* toString(applicationEvent anEvent) {
             break;
 
         case applicationEvent::downlinkMacCommandReceived:
-            return "downlink MAC Command Received";
+            return "downlink MAC command Received";
             break;
 
         default:
