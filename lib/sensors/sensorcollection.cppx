@@ -12,38 +12,38 @@
 uint32_t sensorChannelCollection::actualNumberOfChannels{};
 sensorChannel sensorChannelCollection::theSensorChannelCollection[maxNumberOfChannels];
 
-// sensorChannelCollection::runResult sensorChannelCollection::run() {
-//     actualNumberOfMeasurements = 0;        // reset the array of measurements
+sensorChannelCollection::runResult sensorChannelCollection::run() {
+    actualNumberOfMeasurements = 0;        // reset the array of measurements
 
-//     for (uint32_t sensorIndex = 0; sensorIndex < actualNumberOfSensors; sensorIndex++) {
-//         sensorChannel::runResult theResult = theSensorChannelCollection[sensorIndex].run();
-//         switch (theResult) {
-//             case sensorChannel::runResult::inactive:
-//                 break;
-//             case sensorChannel::runResult::prescaled:
-//                 logging::snprintf(logging::source::sensorEvents, "Sensor %s : prescale tick\n", toString(theSensorChannelCollection[sensorIndex].type));
-//                 break;
-//             case sensorChannel::runResult::sampled:
-//                 logging::snprintf(logging::source::sensorEvents, "Sensor %s : sampled %.2f\n", toString(theSensorChannelCollection[sensorIndex].type), theSensorChannelCollection[sensorIndex].lastValue);
-//                 break;
-//             case sensorChannel::runResult::measured:
-//                 logging::snprintf(logging::source::sensorEvents, "Sensor %s : measurement %.4f\n", toString(theSensorChannelCollection[sensorIndex].type), theSensorChannelCollection[sensorIndex].lastValue);
-//                 addMeasurement(theSensorChannelCollection[sensorIndex].type, theSensorChannelCollection[sensorIndex].lastValue);
-//                 break;
-//         }
-//     }
+    for (uint32_t sensorIndex = 0; sensorIndex < actualNumberOfSensors; sensorIndex++) {
+        sensorChannel::runResult theResult = theSensorChannelCollection[sensorIndex].run();
+        switch (theResult) {
+            case sensorChannel::runResult::inactive:
+                break;
+            case sensorChannel::runResult::prescaled:
+                logging::snprintf(logging::source::sensorEvents, "Sensor %s : prescale tick\n", toString(theSensorChannelCollection[sensorIndex].type));
+                break;
+            case sensorChannel::runResult::sampled:
+                logging::snprintf(logging::source::sensorEvents, "Sensor %s : sampled %.2f\n", toString(theSensorChannelCollection[sensorIndex].type), theSensorChannelCollection[sensorIndex].lastValue);
+                break;
+            case sensorChannel::runResult::measured:
+                logging::snprintf(logging::source::sensorEvents, "Sensor %s : measurement %.4f\n", toString(theSensorChannelCollection[sensorIndex].type), theSensorChannelCollection[sensorIndex].lastValue);
+                addMeasurement(theSensorChannelCollection[sensorIndex].type, theSensorChannelCollection[sensorIndex].lastValue);
+                break;
+        }
+    }
 
-//     // After all measurements are done, check them all and put them to sleep if needed.
-//     for (uint32_t sensorIndex = 0; sensorIndex < actualNumberOfSensors; sensorIndex++) {
-//         theSensorChannelCollection[sensorIndex].goSleep();
-//     }
+    // After all measurements are done, check them all and put them to sleep if needed.
+    for (uint32_t sensorIndex = 0; sensorIndex < actualNumberOfSensors; sensorIndex++) {
+        theSensorChannelCollection[sensorIndex].goSleep();
+    }
 
-//     if (actualNumberOfMeasurements > 0) {
-//         return runResult::newMeasurements;
-//     } else {
-//         return runResult::none;
-//     }
-// }
+    if (actualNumberOfMeasurements > 0) {
+        return runResult::newMeasurements;
+    } else {
+        return runResult::none;
+    }
+}
 
 void sensorChannelCollection::discover() {
     add(sensorChannelType::batteryVoltage, 3, 59, 3, 4);
