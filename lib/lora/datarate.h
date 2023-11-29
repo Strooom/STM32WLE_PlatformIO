@@ -8,12 +8,11 @@
 #pragma once
 #include <stdint.h>
 #include "spreadingfactor.h"
-#include "bandwidth.h"
+
 
 class dataRate {
   public:
     spreadingFactor theSpreadingFactor;
-    bandwidth theBandwidth;
     uint32_t maximumPayloadLength;
 
   private:

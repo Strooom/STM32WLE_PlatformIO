@@ -11,7 +11,7 @@
 // It looks like in LoRaWAN-EU868, the bandwidth is fixed to 125kHz so we don't need this
 // still, it doesn't harm to keep it, maybe later we extend data rates and/or regions
 
-enum class bandwidth : uint8_t {
+enum class loraBandwidth : uint8_t {
     b7dot81kHz   = 0x0,
     b10dot42kHz  = 0x8,
     b157dot63kHz = 0x1,
