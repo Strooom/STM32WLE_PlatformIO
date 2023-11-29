@@ -1,4 +1,4 @@
-#include "lorachannelcollection.h"
+#include "channelcollection.h"
 #ifndef generic
 #include "main.h"
 extern RNG_HandleTypeDef hrng;

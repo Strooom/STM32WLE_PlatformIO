@@ -19,7 +19,7 @@
 #include "dutycycle.h"
 #include "mic.h"
 #include "datarate.h"
-#include "lorachannelcollection.h"
+#include "channelcollection.h"
 #include "transmitpower.h"
 #include "linkdirection.h"
 #include "spreadingfactor.h"
