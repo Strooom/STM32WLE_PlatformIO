@@ -13,7 +13,7 @@
 
 #include "circularbuffer.h"
 #include "applicationevent.h"
-
+#include "display.h"
 #include "lorawan.h"
 
 mainState mainController::theMainState{mainState::boot};
@@ -106,4 +106,12 @@ void mainController::handleEvents() {
                 break;
         }
     }
+// sensorDeviceCollection::run();
+// measurementCollection::run();
+// display::run();
+// LoRaWAN::run();
+
+
+
+
 }

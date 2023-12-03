@@ -7,6 +7,8 @@
 #pragma once
 #include <stdint.h>
 
+
+
 class bitmap {
   public:
     bitmap(const uint32_t theWidth, const uint32_t theHeight, const uint8_t* thePixelData) : width(theWidth), height(theHeight), bytesPerRow(((theWidth - 1) / 8) + 1), pixelData(thePixelData){};

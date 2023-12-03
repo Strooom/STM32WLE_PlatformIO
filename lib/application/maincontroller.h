@@ -12,6 +12,7 @@
 
 class mainController {
   public:
+    mainController() = delete;
     static void initialize();
     static void handleEvents();
 

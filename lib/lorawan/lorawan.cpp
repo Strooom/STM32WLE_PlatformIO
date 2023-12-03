@@ -54,7 +54,7 @@ void LoRaWAN::initialize() {
 
     // Read the LoRaWAN settings from non-volatile storage
 
-    DevAddr.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::DevAddr));
+    DevAddr = settingsCollection::read<uint32_t>(settingsCollection::settingIndex::DevAddr);
 
     uint8_t tmpKeyArray[aesKey::lengthAsBytes];
     settingsCollection::read(settingsCollection::settingIndex::applicationSessionKey, tmpKeyArray);
@@ -62,9 +62,9 @@ void LoRaWAN::initialize() {
     settingsCollection::read(settingsCollection::settingIndex::networkSessionKey, tmpKeyArray);
     networkKey.set(tmpKeyArray);
 
-    uplinkFrameCount.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::uplinkFrameCounter));
-    downlinkFrameCount.set(settingsCollection::read<uint32_t>(settingsCollection::settingIndex::downlinkFrameCounter));
-    rx1Delay = settingsCollection::read<uint8_t>(settingsCollection::settingIndex::rx1Delay);
+    uplinkFrameCount   = settingsCollection::read<uint32_t>(settingsCollection::settingIndex::uplinkFrameCounter);
+    downlinkFrameCount = settingsCollection::read<uint32_t>(settingsCollection::settingIndex::downlinkFrameCounter);
+    rx1Delay           = settingsCollection::read<uint8_t>(settingsCollection::settingIndex::rx1Delay);
 
     logSettings();
     logState();
@@ -301,11 +301,11 @@ void LoRaWAN::goTo(txRxCycleState newState) {
     }
 }
 
-bool LoRaWAN::isReadyToTransmit()  {
+bool LoRaWAN::isReadyToTransmit() {
     return (theTxRxCycleState == txRxCycleState::idle);
 }
 
-uint32_t LoRaWAN::getMaxApplicationPayloadLength()  {
+uint32_t LoRaWAN::getMaxApplicationPayloadLength() {
     return (theDataRates.theDataRates[currentDataRateIndex].maximumPayloadLength - macOut.getLevel());
 }
 
@@ -371,8 +371,7 @@ void LoRaWAN::encryptPayload(aesKey& theKey) {
     uint8_t theBlock[16];        // 16 bytes, which will be filled with certain values from LoRaWAN context, and then encrypted
     // TODO : use an aesBlock instead
 
-
-// TODO : adjust for aesBlock io uint8_t[16]
+    // TODO : adjust for aesBlock io uint8_t[16]
     // for (uint32_t blockIndex = 0x00; blockIndex < nmbrOfBlocks; blockIndex++) {
     //     prepareBlockAi(theBlock, linkDirection::uplink, DevAddr, uplinkFrameCount, (blockIndex + 1));
     //     theBlock.encrypt(applicationKey);

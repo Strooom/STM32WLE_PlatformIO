@@ -14,6 +14,7 @@ class frameCount {
     frameCount();                                                                            //
     explicit frameCount(uint32_t theFrameCount);                                             //
     void set(uint32_t theFrameCount);                                                        // set the frameCount from a uint32_t
+    frameCount& operator=(uint32_t theFrameCount);                                           //
     void set(uint8_t theFrameCount[length]);                                                 // set the frameCount from an array of 4 bytes
     void increment();                                                                        //
     static constexpr uint32_t maximumGap{256};                                               // maximum gap between last (valid) received framecount and next received framecount.

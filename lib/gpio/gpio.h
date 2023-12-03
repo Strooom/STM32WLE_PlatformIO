@@ -10,6 +10,7 @@
 
 class gpio {
   public:
+    gpio() = delete;
     enum class group : uint32_t {
         none = 0,
         rfControl,

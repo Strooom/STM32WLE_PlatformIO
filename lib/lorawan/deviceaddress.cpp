@@ -20,3 +20,8 @@ void deviceAddress::set(uint8_t theDeviceAddress[4]) {
     asUint8[2] = theDeviceAddress[2];
     asUint8[3] = theDeviceAddress[3];
 }
+
+deviceAddress& deviceAddress::operator=(uint32_t theDeviceAddress) {
+    asUint32 = theDeviceAddress;
+    return *this;
+}

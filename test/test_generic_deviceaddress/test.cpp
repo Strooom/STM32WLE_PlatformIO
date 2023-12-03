@@ -31,6 +31,12 @@ void test_set() {
     address1.set(address2Bytes);
     TEST_ASSERT_EQUAL_UINT32(0x12345678, address1.asUint32);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(address2Bytes, address1.asUint8, 4);
+
+    address1.set(0x87654321);
+    TEST_ASSERT_EQUAL_UINT32(0x87654321, address1.asUint32);
+
+    address1 = 0x12345678;
+    TEST_ASSERT_EQUAL_UINT32(0x12345678, address1.asUint32);
 }
 
 int main(int argc, char **argv) {

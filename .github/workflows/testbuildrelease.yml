@@ -53,11 +53,11 @@ jobs:
           echo "fulltag = [$fulltag]"
           declare versiontag=$(echo $fulltag | cut -d'-' -f1)
           echo "extract SemVer numbers from version tag [$versiontag]"
-          declare -i lastmajordigit=$(echo $versiontag | cut -c 1- | cut -d'_' -f1)
+          declare -i lastmajordigit=$(echo $versiontag | cut -c 1- | cut -d'.' -f1)
           echo "lastmajordigit = $lastmajordigit"
-          declare -i lastminordigit=$(echo $versiontag | cut -c 1- | cut -d'_' -f2)
+          declare -i lastminordigit=$(echo $versiontag | cut -c 1- | cut -d'.' -f2)
           echo "lastminordigit = $lastminordigit"
-          declare -i lastpatchdigit=$(echo $versiontag | cut -c 1- | cut -d'_' -f3)
+          declare -i lastpatchdigit=$(echo $versiontag | cut -c 1- | cut -d'.' -f3)
           echo "lastpatchdigit = $lastpatchdigit"
           declare lastversion="v$lastmajordigit.$lastminordigit.$lastpatchdigit"
           echo "output variables to GitHub Actions"
@@ -89,17 +89,17 @@ jobs:
               declare buildversionfilename=$(echo "${buildversion//./_}")
 
             elif [[ "${{ github.event.head_commit.message }}" == *"minor"* ]]; then
-            echo "Incrementing Minor versionDigit"
-            declare -i nextmajordigit=$lastmajordigit
-              declare -i nextminordigit=$lastminordigit+1
+              echo "Incrementing Minor versionDigit"
+              declare -i nextmajordigit=${{ steps.versioninfo.outputs.lastmajordigit }}
+              declare -i nextminordigit=${{ steps.versioninfo.outputs.lastminordigit }}+1
               declare -i nextpatchdigit=0
               declare buildversion="v$nextmajordigit.$nextminordigit.$nextpatchdigit"
               declare buildversionfilename=$(echo "${buildversion//./_}")
             else
               echo "Incrementing Patch versionDigit"
-              declare -i nextmajordigit=$lastmajordigit
-              declare -i nextminordigit=$lastminordigit
-              declare -i nextpatchdigit=$lastpatchdigit+1
+              declare -i nextmajordigit=${{ steps.versioninfo.outputs.lastmajordigit }}
+              declare -i nextminordigit=${{ steps.versioninfo.outputs.lastminordigit }}
+              declare -i nextpatchdigit=${{ steps.versioninfo.outputs.lastpatchdigit }}+1
               declare buildversion="v$nextmajordigit.$nextminordigit.$nextpatchdigit"
               declare buildversionfilename=$(echo "${buildversion//./_}")
             fi
@@ -122,7 +122,7 @@ jobs:
           echo "nextpatchdigit=$nextpatchdigit" >> $GITHUB_OUTPUT
           echo "buildversion=$buildversion" >> $GITHUB_OUTPUT
           echo "buildversionfilename=$buildversionfilename" >> $GITHUB_OUTPUT
-
+  
       - name: Show Build info
         id: showbuildinfo
         run: |

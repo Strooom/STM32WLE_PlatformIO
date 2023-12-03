@@ -11,6 +11,7 @@
 
 class sensorDeviceCollection {
   public:
+    sensorDeviceCollection() = delete;
     static void discover();        // discover all sensor devices that are present by scanning the I2C addresses and checking register-values
     static void run();             // service all sensor devices that are present
 

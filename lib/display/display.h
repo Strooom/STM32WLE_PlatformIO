@@ -24,11 +24,12 @@ enum class displayMirroring : uint32_t {
 
 class display {
   public:
-    static void initialize();               // wakeup through HW reset, then configure display
-    static void goSleep();                  //
-    void set();                             // write displayBuffer to display
-    void clear();                           // write blank data to display
-    void update(updateMode theMode);        // refresh display
+    display() = delete;
+    static void initialize();                      // wakeup through HW reset, then configure display
+    static void goSleep();                         //
+    static void set();                             // write displayBuffer to display
+    static void clear();                           // write blank data to display
+    static void update(updateMode theMode);        // refresh display
 
     static void setPixel(uint32_t x, uint32_t y);                       // takes into account the rotation and mirroring settings, so clients don't have to worry about this
     static void clearPixel(uint32_t x, uint32_t y);                     // takes into account the rotation and mirroring settings, so clients don't have to worry about this
@@ -60,7 +61,7 @@ class display {
         DISPLAY_UPDATE_CONTROL_1             = 0x21,
         DISPLAY_UPDATE_CONTROL_2             = 0x22,
         WRITE_RAM                            = 0x24,
-        WRITE_RAM_2                          = 0x26, // undocumented, reverse engineered from example code
+        WRITE_RAM_2                          = 0x26,        // undocumented, reverse engineered from example code
         WRITE_VCOM_REGISTER                  = 0x2C,
         WRITE_LUT_REGISTER                   = 0x32,
         SET_DUMMY_LINE_PERIOD                = 0x3A,

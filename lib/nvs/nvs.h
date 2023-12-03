@@ -9,6 +9,7 @@
 
 class nonVolatileStorage {
   public:
+    nonVolatileStorage() = delete;
     static bool isPresent();        // testing if the EEPROM is found correctly on the I2C bus
 
     static constexpr uint32_t size{64 * 1024};

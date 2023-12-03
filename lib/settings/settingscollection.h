@@ -5,6 +5,7 @@
 
 class settingsCollection {
   public:
+    settingsCollection() = delete;
     enum class settingIndex : uint32_t {
         nvsMapVersion = 0,
         displayVersion,
@@ -48,9 +49,9 @@ class settingsCollection {
 template <typename dataType>
 void settingsCollection::save(settingIndex theIndex, const dataType& sourceData) {
     if (settingsCollection::isValidIndex(theIndex)) {
-        const uint8_t* bytePtr      = reinterpret_cast<const uint8_t*>(&sourceData);
-        uint32_t startAddress = settingsCollection::settings[static_cast<uint32_t>(theIndex)].startAddress;
-        uint32_t length       = settingsCollection::settings[static_cast<uint32_t>(theIndex)].length;
+        const uint8_t* bytePtr = reinterpret_cast<const uint8_t*>(&sourceData);
+        uint32_t startAddress  = settingsCollection::settings[static_cast<uint32_t>(theIndex)].startAddress;
+        uint32_t length        = settingsCollection::settings[static_cast<uint32_t>(theIndex)].length;
         nonVolatileStorage::write(startAddress, bytePtr, length);
     }
 }

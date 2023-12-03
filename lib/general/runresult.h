@@ -7,18 +7,9 @@
 #pragma once
 #include <stdint.h>
 
-enum class sensorDeviceType : uint32_t {
-    battery,
-    mcu,
-    bme680,
-    bme688,
-    tsl2591,
-    sht40,
-    veml7700,
-    lis3dh,
-    sths34,
-    nmbrOfKnownDevices
-
+enum class runResult : uint32_t {
+    ready,
+    busy
 };
 
-const char* toString(sensorDeviceType theType);
+const char* toString(const runResult result);

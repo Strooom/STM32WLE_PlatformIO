@@ -19,9 +19,14 @@ void test_set() {
     count1.set(0x12345678);
     TEST_ASSERT_EQUAL_UINT32(0x12345678, count1.asUint32);
 
+    count1 = 0x87654321;
+    TEST_ASSERT_EQUAL_UINT32(0x87654321, count1.asUint32);
+
     uint8_t count2Bytes[4] = {0x77, 0x55, 0x33, 0x11};
     count1.set(count2Bytes);
     TEST_ASSERT_EQUAL_UINT32(0x11335577, count1.asUint32);
+
+
 }
 
 void test_increment() {

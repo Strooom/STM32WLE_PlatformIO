@@ -7,6 +7,12 @@ frameCount::frameCount(uint32_t initialValue) : asUint32(initialValue){};
 void frameCount::set(uint32_t theFrameCount) {
     asUint32 = theFrameCount;
 }
+
+frameCount& frameCount::operator=(uint32_t theFrameCount) {
+    asUint32 = theFrameCount;
+    return *this;
+}
+
 void frameCount::set(uint8_t theFrameCount[4]) {
     asUint8[0] = theFrameCount[0];
     asUint8[1] = theFrameCount[1];

@@ -6,7 +6,7 @@
 
 #include "display.h"
 
-#ifdef target
+#ifndef generic
 #include "main.h"
 extern SPI_HandleTypeDef hspi2;
 #endif
